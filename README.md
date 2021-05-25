@@ -24,7 +24,7 @@
   </a>
 </p>
 
-## What is TronWeb?
+## What is LiteWeb?
 
 __[Tron Web - Developer Document](https://developers.tron.network/docs/tron-web-intro)__
 
