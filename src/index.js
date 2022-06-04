@@ -6,7 +6,7 @@ import {version} from '../package.json';
 import semver from 'semver';
 
 import TransactionBuilder from 'lib/transactionBuilder';
-import Trx from 'lib/trx';
+import Xlt from 'lib/xlt';
 import Contract from 'lib/contract';
 import Plugin from 'lib/plugin';
 import Event from 'lib/event';
@@ -15,11 +15,11 @@ import {ADDRESS_PREFIX} from 'utils/address';
 
 const DEFAULT_VERSION = '3.5.0';
 
-export default class TronWeb extends EventEmitter {
+export default class LiteWeb extends EventEmitter {
     static providers = providers;
     static BigNumber = BigNumber;
     static TransactionBuilder = TransactionBuilder;
-    static Trx = Trx;
+    static Xlt = Xlt;
     static Contract = Contract;
     static Plugin = Plugin;
     static Event = Event;
@@ -52,7 +52,7 @@ export default class TronWeb extends EventEmitter {
 
         this.event = new Event(this);
         this.transactionBuilder = new TransactionBuilder(this);
-        this.trx = new Trx(this);
+        this.xlt = new Xlt(this);
         this.plugin = new Plugin(this);
         this.utils = utils;
 
@@ -76,7 +76,7 @@ export default class TronWeb extends EventEmitter {
             'toSun', 'fromSun', 'toBigNumber', 'isAddress',
             'createAccount', 'address', 'version'
         ].forEach(key => {
-            this[key] = TronWeb[key];
+            this[key] = LiteWeb[key];
         });
 
         if (privateKey)
@@ -88,7 +88,7 @@ export default class TronWeb extends EventEmitter {
 
     async getFullnodeVersion() {
         try {
-            const nodeInfo = await this.trx.getNodeInfo()
+            const nodeInfo = await this.xlt.getNodeInfo()
             this.fullnodeVersion = nodeInfo.configNodeInfo.codeVersion
             if (this.fullnodeVersion.split('.').length === 2) {
                 this.fullnodeVersion += '.0';
@@ -260,23 +260,23 @@ export default class TronWeb extends EventEmitter {
 
     static toHex(val) {
         if (utils.isBoolean(val))
-            return TronWeb.fromDecimal(+val);
+            return LiteWeb.fromDecimal(+val);
 
         if (utils.isBigNumber(val))
-            return TronWeb.fromDecimal(val);
+            return LiteWeb.fromDecimal(val);
 
         if (typeof val === 'object')
-            return TronWeb.fromUtf8(JSON.stringify(val));
+            return LiteWeb.fromUtf8(JSON.stringify(val));
 
         if (utils.isString(val)) {
             if (/^(-|)0x/.test(val))
                 return val;
 
             if (!isFinite(val))
-                return TronWeb.fromUtf8(val);
+                return LiteWeb.fromUtf8(val);
         }
 
-        let result = TronWeb.fromDecimal(val);
+        let result = LiteWeb.fromDecimal(val);
         if (result === '0xNaN') {
             throw new Error('The passed value is not convertible to a hex string');
         } else {
@@ -326,24 +326,24 @@ export default class TronWeb extends EventEmitter {
 
 
     static toDecimal(value) {
-        return TronWeb.toBigNumber(value).toNumber();
+        return LiteWeb.toBigNumber(value).toNumber();
     }
 
     static fromDecimal(value) {
-        const number = TronWeb.toBigNumber(value);
+        const number = LiteWeb.toBigNumber(value);
         const result = number.toString(16);
 
         return number.isLessThan(0) ? '-0x' + result.substr(1) : '0x' + result;
     }
 
     static fromSun(sun) {
-        const trx = TronWeb.toBigNumber(sun).div(1_000_000);
-        return utils.isBigNumber(sun) ? trx : trx.toString(10);
+        const xlt = LiteWeb.toBigNumber(sun).div(1_000_000);
+        return utils.isBigNumber(sun) ? xlt : xlt.toString(10);
     }
 
-    static toSun(trx) {
-        const sun = TronWeb.toBigNumber(trx).times(1_000_000);
-        return utils.isBigNumber(trx) ? sun : sun.toString(10);
+    static toSun(xlt) {
+        const sun = LiteWeb.toBigNumber(xlt).times(1_000_000);
+        return utils.isBigNumber(xlt) ? sun : sun.toString(10);
     }
 
     static toBigNumber(amount = 0) {
@@ -363,7 +363,7 @@ export default class TronWeb extends EventEmitter {
         // Convert HEX to Base58
         if (address.length === 42) {
             try {
-                return TronWeb.isAddress(
+                return LiteWeb.isAddress(
                     utils.crypto.getBase58CheckAddress(
                         utils.code.hexStr2byteArray(address) // it throws an error if the address starts with 0x
                     )

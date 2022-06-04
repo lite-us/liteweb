@@ -1,11 +1,11 @@
 const chalk = require('chalk')
-const TronWeb = require('../setup/TronWeb');
+const LiteWeb = require('../setup/LiteWeb');
 const jlog = require('./jlog')
 
 const {FULL_NODE_API, SOLIDITY_NODE_API, EVENT_API, PRIVATE_KEY} = require('./config')
 
 const createInstance = () => {
-    return new TronWeb({
+    return new LiteWeb({
         fullHost: FULL_NODE_API,
         privateKey: PRIVATE_KEY
     })
@@ -21,10 +21,10 @@ const getInstance = () => {
 }
 
 const newTestAccounts = async (amount) => {
-    const tronWeb = createInstance();
+    const liteWeb = createInstance();
 
     console.log(chalk.blue(`Generating ${amount} new accounts...`))
-    await tronWeb.fullNode.request('/admin/temporary-accounts-generation?accounts=' + amount);
+    await liteWeb.fullNode.request('/admin/temporary-accounts-generation?accounts=' + amount);
     const lastCreated = await getTestAccounts(-1)
     jlog(lastCreated.b58)
 }
@@ -35,8 +35,8 @@ const getTestAccounts = async (block) => {
         hex: [],
         pks: []
     }
-    const tronWeb = createInstance();
-    const accountsJson = await tronWeb.fullNode.request('/admin/accounts-json');
+    const liteWeb = createInstance();
+    const accountsJson = await liteWeb.fullNode.request('/admin/accounts-json');
     const index = typeof block === 'number'
         ? (block > -1 && block < accountsJson.more.length ? block : accountsJson.more.length - 1)
         : undefined
@@ -44,9 +44,9 @@ const getTestAccounts = async (block) => {
         ? accountsJson.more[index].privateKeys
         : accountsJson.privateKeys;
     for (let i = 0; i < accounts.pks.length; i++) {
-        let addr = tronWeb.address.fromPrivateKey(accounts.pks[i]);
+        let addr = liteWeb.address.fromPrivateKey(accounts.pks[i]);
         accounts.b58.push(addr);
-        accounts.hex.push(tronWeb.address.toHex(addr));
+        accounts.hex.push(liteWeb.address.toHex(addr));
     }
     return Promise.resolve(accounts);
 }
@@ -56,6 +56,6 @@ module.exports = {
     getInstance,
     newTestAccounts,
     getTestAccounts,
-    TronWeb
+    LiteWeb
 }
 

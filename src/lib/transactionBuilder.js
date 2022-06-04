@@ -1,4 +1,4 @@
-import TronWeb from 'index';
+import LiteWeb from 'index';
 import utils from 'utils';
 import {AbiCoder} from 'utils/ethersUtils';
 import Validator from 'paramValidator';
@@ -9,11 +9,11 @@ let self;
 //helpers
 
 function toHex(value) {
-    return TronWeb.address.toHex(value);
+    return LiteWeb.address.toHex(value);
 }
 
 function fromUtf8(value) {
-    return self.tronWeb.fromUtf8(value);
+    return self.liteWeb.fromUtf8(value);
 }
 
 function resultManager(transaction, callback) {
@@ -22,7 +22,7 @@ function resultManager(transaction, callback) {
 
     if (transaction.result && transaction.result.message) {
         return callback(
-            self.tronWeb.toUtf8(transaction.result.message)
+            self.liteWeb.toUtf8(transaction.result.message)
         );
     }
 
@@ -31,16 +31,16 @@ function resultManager(transaction, callback) {
 
 
 export default class TransactionBuilder {
-    constructor(tronWeb = false) {
-        if (!tronWeb || !tronWeb instanceof TronWeb)
-            throw new Error('Expected instance of TronWeb');
+    constructor(liteWeb = false) {
+        if (!liteWeb || !liteWeb instanceof LiteWeb)
+            throw new Error('Expected instance of LiteWeb');
         self = this;
-        this.tronWeb = tronWeb;
+        this.liteWeb = liteWeb;
         this.injectPromise = utils.promiseInjector(this);
-        this.validator = new Validator(tronWeb);
+        this.validator = new Validator(liteWeb);
     }
 
-    sendTrx(to = false, amount = 0, from = this.tronWeb.defaultAddress.hex, options, callback = false) {
+    sendXlt(to = false, amount = 0, from = this.liteWeb.defaultAddress.hex, options, callback = false) {
         if (utils.isFunction(options)) {
             callback = options;
             options = {};
@@ -48,14 +48,14 @@ export default class TransactionBuilder {
 
         if (utils.isFunction(from)) {
             callback = from;
-            from = this.tronWeb.defaultAddress.hex;
+            from = this.liteWeb.defaultAddress.hex;
         } else if (utils.isObject(from)) {
             options = from;
-            from = this.tronWeb.defaultAddress.hex;
+            from = this.liteWeb.defaultAddress.hex;
         }
 
         if (!callback)
-            return this.injectPromise(this.sendTrx, to, amount, from, options);
+            return this.injectPromise(this.sendXlt, to, amount, from, options);
 
         // accept amounts passed as strings
         amount = parseInt(amount)
@@ -74,7 +74,7 @@ export default class TransactionBuilder {
             {
                 names: ['recipient', 'origin'],
                 type: 'notEqual',
-                msg: 'Cannot transfer TRX to the same account'
+                msg: 'Cannot transfer XLT to the same account'
             },
             {
                 name: 'amount',
@@ -95,10 +95,10 @@ export default class TransactionBuilder {
             data.Permission_id = options.permissionId;
         }
 
-        this.tronWeb.fullNode.request('wallet/createtransaction', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
+        this.liteWeb.fullNode.request('wallet/createtransaction', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
     }
 
-    sendToken(to = false, amount = 0, tokenID = false, from = this.tronWeb.defaultAddress.hex, options, callback = false) {
+    sendToken(to = false, amount = 0, tokenID = false, from = this.liteWeb.defaultAddress.hex, options, callback = false) {
         if (utils.isFunction(options)) {
             callback = options;
             options = {};
@@ -106,10 +106,10 @@ export default class TransactionBuilder {
 
         if (utils.isFunction(from)) {
             callback = from;
-            from = this.tronWeb.defaultAddress.hex;
+            from = this.liteWeb.defaultAddress.hex;
         } else if (utils.isObject(from)) {
             options = from;
-            from = this.tronWeb.defaultAddress.hex;
+            from = this.liteWeb.defaultAddress.hex;
         }
 
         if (!callback)
@@ -157,10 +157,10 @@ export default class TransactionBuilder {
             data.Permission_id = options.permissionId;
         }
 
-        this.tronWeb.fullNode.request('wallet/transferasset', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
+        this.liteWeb.fullNode.request('wallet/transferasset', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
     }
 
-    purchaseToken(issuerAddress = false, tokenID = false, amount = 0, buyer = this.tronWeb.defaultAddress.hex, options, callback = false) {
+    purchaseToken(issuerAddress = false, tokenID = false, amount = 0, buyer = this.liteWeb.defaultAddress.hex, options, callback = false) {
         if (utils.isFunction(options)) {
             callback = options;
             options = {};
@@ -168,10 +168,10 @@ export default class TransactionBuilder {
 
         if (utils.isFunction(buyer)) {
             callback = buyer;
-            buyer = this.tronWeb.defaultAddress.hex;
+            buyer = this.liteWeb.defaultAddress.hex;
         } else if (utils.isObject(buyer)) {
             options = buyer;
-            buyer = this.tronWeb.defaultAddress.hex;
+            buyer = this.liteWeb.defaultAddress.hex;
         }
 
         if (!callback)
@@ -218,10 +218,10 @@ export default class TransactionBuilder {
             data.Permission_id = options.permissionId;
         }
 
-        this.tronWeb.fullNode.request('wallet/participateassetissue', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
+        this.liteWeb.fullNode.request('wallet/participateassetissue', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
     }
 
-    freezeBalance(amount = 0, duration = 3, resource = "BANDWIDTH", address = this.tronWeb.defaultAddress.hex, receiverAddress = undefined, options, callback = false) {
+    freezeBalance(amount = 0, duration = 3, resource = "BANDWIDTH", address = this.liteWeb.defaultAddress.hex, receiverAddress = undefined, options, callback = false) {
         if (utils.isFunction(options)) {
             callback = options;
             options = {};
@@ -237,10 +237,10 @@ export default class TransactionBuilder {
 
         if (utils.isFunction(address)) {
             callback = address;
-            address = this.tronWeb.defaultAddress.hex;
+            address = this.liteWeb.defaultAddress.hex;
         } else if (utils.isObject(address)) {
             options = address;
-            address = this.tronWeb.defaultAddress.hex;
+            address = this.liteWeb.defaultAddress.hex;
         }
 
         if (utils.isFunction(duration)) {
@@ -304,10 +304,10 @@ export default class TransactionBuilder {
             data.Permission_id = options.permissionId;
         }
 
-        this.tronWeb.fullNode.request('wallet/freezebalance', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
+        this.liteWeb.fullNode.request('wallet/freezebalance', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
     }
 
-    unfreezeBalance(resource = "BANDWIDTH", address = this.tronWeb.defaultAddress.hex, receiverAddress = undefined, options, callback = false) {
+    unfreezeBalance(resource = "BANDWIDTH", address = this.liteWeb.defaultAddress.hex, receiverAddress = undefined, options, callback = false) {
         if (utils.isFunction(options)) {
             callback = options;
             options = {};
@@ -323,10 +323,10 @@ export default class TransactionBuilder {
 
         if (utils.isFunction(address)) {
             callback = address;
-            address = this.tronWeb.defaultAddress.hex;
+            address = this.liteWeb.defaultAddress.hex;
         } else if (utils.isObject(address)) {
             options = address;
-            address = this.tronWeb.defaultAddress.hex;
+            address = this.liteWeb.defaultAddress.hex;
         }
 
         if (utils.isFunction(resource)) {
@@ -371,10 +371,10 @@ export default class TransactionBuilder {
             data.Permission_id = options.permissionId;
         }
 
-        this.tronWeb.fullNode.request('wallet/unfreezebalance', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
+        this.liteWeb.fullNode.request('wallet/unfreezebalance', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
     }
 
-    withdrawBlockRewards(address = this.tronWeb.defaultAddress.hex, options, callback = false) {
+    withdrawBlockRewards(address = this.liteWeb.defaultAddress.hex, options, callback = false) {
         if (utils.isFunction(options)) {
             callback = options;
             options = {};
@@ -382,10 +382,10 @@ export default class TransactionBuilder {
 
         if (utils.isFunction(address)) {
             callback = address;
-            address = this.tronWeb.defaultAddress.hex;
+            address = this.liteWeb.defaultAddress.hex;
         } else if (utils.isObject(address)) {
             options = address;
-            address = this.tronWeb.defaultAddress.hex;
+            address = this.liteWeb.defaultAddress.hex;
         }
 
         if (!callback)
@@ -408,11 +408,11 @@ export default class TransactionBuilder {
             data.Permission_id = options.permissionId;
         }
 
-        this.tronWeb.fullNode.request('wallet/withdrawbalance', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
+        this.liteWeb.fullNode.request('wallet/withdrawbalance', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
     }
 
     applyForSR(
-        address = this.tronWeb.defaultAddress.hex,
+        address = this.liteWeb.defaultAddress.hex,
         url = false,
         options,
         callback = false
@@ -425,7 +425,7 @@ export default class TransactionBuilder {
         if (utils.isObject(url) && utils.isValidURL(address)) {
             options = url;
             url = address;
-            address = this.tronWeb.defaultAddress.hex;
+            address = this.liteWeb.defaultAddress.hex;
         }
 
         if (!callback)
@@ -457,10 +457,10 @@ export default class TransactionBuilder {
             data.Permission_id = options.permissionId;
         }
 
-        this.tronWeb.fullNode.request('wallet/createwitness', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
+        this.liteWeb.fullNode.request('wallet/createwitness', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
     }
 
-    vote(votes = {}, voterAddress = this.tronWeb.defaultAddress.hex, options, callback = false) {
+    vote(votes = {}, voterAddress = this.liteWeb.defaultAddress.hex, options, callback = false) {
         if (utils.isFunction(options)) {
             callback = options;
             options = {};
@@ -468,10 +468,10 @@ export default class TransactionBuilder {
 
         if (utils.isFunction(voterAddress)) {
             callback = voterAddress;
-            voterAddress = this.tronWeb.defaultAddress.hex;
+            voterAddress = this.liteWeb.defaultAddress.hex;
         } else if (utils.isObject(voterAddress)) {
             options = voterAddress;
-            voterAddress = this.tronWeb.defaultAddress.hex;
+            voterAddress = this.liteWeb.defaultAddress.hex;
         }
 
         if (!callback)
@@ -531,13 +531,13 @@ export default class TransactionBuilder {
             data.Permission_id = options.permissionId;
         }
 
-        this.tronWeb.fullNode.request('wallet/votewitnessaccount', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
+        this.liteWeb.fullNode.request('wallet/votewitnessaccount', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
     }
 
-    createSmartContract(options = {}, issuerAddress = this.tronWeb.defaultAddress.hex, callback = false) {
+    createSmartContract(options = {}, issuerAddress = this.liteWeb.defaultAddress.hex, callback = false) {
         if (utils.isFunction(issuerAddress)) {
             callback = issuerAddress;
-            issuerAddress = this.tronWeb.defaultAddress.hex;
+            issuerAddress = this.liteWeb.defaultAddress.hex;
         }
 
         if (!callback)
@@ -694,7 +694,7 @@ export default class TransactionBuilder {
             name
         };
 
-        // tokenValue and tokenId can cause errors if provided when the trx10 proposal has not been approved yet. So we set them only if they are passed to the method.
+        // tokenValue and tokenId can cause errors if provided when the xlt10 proposal has not been approved yet. So we set them only if they are passed to the method.
         if (utils.isNotNullOrUndefined(tokenValue))
             args.call_token_value = parseInt(tokenValue)
         if (utils.isNotNullOrUndefined(tokenId))
@@ -702,7 +702,7 @@ export default class TransactionBuilder {
         if (options && options.permissionId)
             args.Permission_id = options.permissionId;
 
-        this.tronWeb.fullNode.request('wallet/deploycontract', args, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
+        this.liteWeb.fullNode.request('wallet/deploycontract', args, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
     }
 
     triggerSmartContract(...params) {
@@ -732,13 +732,13 @@ export default class TransactionBuilder {
         functionSelector,
         options = {},
         parameters = [],
-        issuerAddress = this.tronWeb.defaultAddress.hex,
+        issuerAddress = this.liteWeb.defaultAddress.hex,
         callback = false
     ) {
 
         if (utils.isFunction(issuerAddress)) {
             callback = issuerAddress;
-            issuerAddress = this.tronWeb.defaultAddress.hex;
+            issuerAddress = this.liteWeb.defaultAddress.hex;
         }
 
         if (utils.isFunction(parameters)) {
@@ -874,17 +874,17 @@ export default class TransactionBuilder {
             args.Permission_id = options.permissionId;
         }
 
-        this.tronWeb[options.confirmed ? 'solidityNode' : 'fullNode'].request(`wallet${options.confirmed ? 'solidity' : ''}/trigger${options._isConstant ? 'constant' : 'smart'}contract`, args, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
+        this.liteWeb[options.confirmed ? 'solidityNode' : 'fullNode'].request(`wallet${options.confirmed ? 'solidity' : ''}/trigger${options._isConstant ? 'constant' : 'smart'}contract`, args, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
     }
 
-    clearABI(contractAddress, ownerAddress = this.tronWeb.defaultAddress.hex, callback = false) {
+    clearABI(contractAddress, ownerAddress = this.liteWeb.defaultAddress.hex, callback = false) {
         if (!callback)
             return this.injectPromise(this.clearABI, contractAddress, ownerAddress);
 
-        if (!this.tronWeb.isAddress(contractAddress))
+        if (!this.liteWeb.isAddress(contractAddress))
             return callback('Invalid contract address provided');
 
-        if (!this.tronWeb.isAddress(ownerAddress))
+        if (!this.liteWeb.isAddress(ownerAddress))
             return callback('Invalid owner address provided');
 
         const data = {
@@ -892,14 +892,14 @@ export default class TransactionBuilder {
             owner_address: toHex(ownerAddress)
         };
 
-        if (this.tronWeb.trx.cache.contracts[contractAddress]) {
-            delete this.tronWeb.trx.cache.contracts[contractAddress]
+        if (this.liteWeb.xlt.cache.contracts[contractAddress]) {
+            delete this.liteWeb.xlt.cache.contracts[contractAddress]
         }
-        this.tronWeb.fullNode.request('wallet/clearabi', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
+        this.liteWeb.fullNode.request('wallet/clearabi', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
 
     }
 
-    updateBrokerage(brokerage, ownerAddress = this.tronWeb.defaultAddress.hex, callback = false) {
+    updateBrokerage(brokerage, ownerAddress = this.liteWeb.defaultAddress.hex, callback = false) {
         if (!callback)
             return this.injectPromise(this.updateBrokerage, brokerage, ownerAddress);
 
@@ -909,7 +909,7 @@ export default class TransactionBuilder {
         if (!utils.isInteger(brokerage) || brokerage < 0 || brokerage > 100)
             return callback('Brokerage must be an integer between 0 and 100');
 
-        if (!this.tronWeb.isAddress(ownerAddress))
+        if (!this.liteWeb.isAddress(ownerAddress))
             return callback('Invalid owner address provided');
 
         const data = {
@@ -917,14 +917,14 @@ export default class TransactionBuilder {
             owner_address: toHex(ownerAddress)
         };
 
-        this.tronWeb.fullNode.request('wallet/updateBrokerage', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
+        this.liteWeb.fullNode.request('wallet/updateBrokerage', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
 
     }
 
-    createToken(options = {}, issuerAddress = this.tronWeb.defaultAddress.hex, callback = false) {
+    createToken(options = {}, issuerAddress = this.liteWeb.defaultAddress.hex, callback = false) {
         if (utils.isFunction(issuerAddress)) {
             callback = issuerAddress;
-            issuerAddress = this.tronWeb.defaultAddress.hex;
+            issuerAddress = this.liteWeb.defaultAddress.hex;
         }
 
         if (!callback)
@@ -936,8 +936,8 @@ export default class TransactionBuilder {
             description = false,
             url = false,
             totalSupply = 0,
-            trxRatio = 1, // How much TRX will `tokenRatio` cost?
-            tokenRatio = 1, // How many tokens will `trxRatio` afford?
+            xltRatio = 1, // How much XLT will `tokenRatio` cost?
+            tokenRatio = 1, // How many tokens will `xltRatio` afford?
             saleStart = Date.now(),
             saleEnd = false,
             freeBandwidth = 0, // The creator's "donated" bandwidth for use by token holders
@@ -956,9 +956,9 @@ export default class TransactionBuilder {
                 value: totalSupply
             },
             {
-                name: 'TRX ratio',
+                name: 'XLT ratio',
                 type: 'positive-integer',
-                value: trxRatio
+                value: xltRatio
             },
             {
                 name: 'Token ratio',
@@ -1042,7 +1042,7 @@ export default class TransactionBuilder {
             description: fromUtf8(description),
             url: fromUtf8(url),
             total_supply: parseInt(totalSupply),
-            trx_num: parseInt(trxRatio),
+            xlt_num: parseInt(xltRatio),
             num: parseInt(tokenRatio),
             start_time: parseInt(saleStart),
             end_time: parseInt(saleEnd),
@@ -1053,7 +1053,7 @@ export default class TransactionBuilder {
                 frozen_days: parseInt(frozenDuration)
             }
         }
-        if (this.tronWeb.fullnodeSatisfies('>=3.5.0') && !(parseInt(frozenAmount) > 0)) {
+        if (this.liteWeb.fullnodeSatisfies('>=3.5.0') && !(parseInt(frozenAmount) > 0)) {
             delete data.frozen_supply
         }
         if (precision && !isNaN(parseInt(precision))) {
@@ -1066,10 +1066,10 @@ export default class TransactionBuilder {
             data.Permission_id = options.permissionId;
         }
 
-        this.tronWeb.fullNode.request('wallet/createassetissue', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
+        this.liteWeb.fullNode.request('wallet/createassetissue', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
     }
 
-    updateAccount(accountName = false, address = this.tronWeb.defaultAddress.hex, options, callback = false) {
+    updateAccount(accountName = false, address = this.liteWeb.defaultAddress.hex, options, callback = false) {
         if (utils.isFunction(options)) {
             callback = options;
             options = {};
@@ -1077,10 +1077,10 @@ export default class TransactionBuilder {
 
         if (utils.isFunction(address)) {
             callback = address;
-            address = this.tronWeb.defaultAddress.hex;
+            address = this.liteWeb.defaultAddress.hex;
         } else if (utils.isObject(address)) {
             options = address;
-            address = this.tronWeb.defaultAddress.hex;
+            address = this.liteWeb.defaultAddress.hex;
         }
 
         if (!callback) {
@@ -1110,13 +1110,13 @@ export default class TransactionBuilder {
             data.Permission_id = options.permissionId;
         }
 
-        this.tronWeb.fullNode.request('wallet/updateaccount', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
+        this.liteWeb.fullNode.request('wallet/updateaccount', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
     }
 
-    setAccountId(accountId, address = this.tronWeb.defaultAddress.hex, callback = false) {
+    setAccountId(accountId, address = this.liteWeb.defaultAddress.hex, callback = false) {
         if (utils.isFunction(address)) {
             callback = address;
-            address = this.tronWeb.defaultAddress.hex;
+            address = this.liteWeb.defaultAddress.hex;
         }
 
         if (!callback) {
@@ -1149,19 +1149,19 @@ export default class TransactionBuilder {
             return;
 
 
-        this.tronWeb.fullNode.request('wallet/setaccountid', {
+        this.liteWeb.fullNode.request('wallet/setaccountid', {
             account_id: accountId,
             owner_address: toHex(address),
         }, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
     }
 
-    updateToken(options = {}, issuerAddress = this.tronWeb.defaultAddress.hex, callback = false) {
+    updateToken(options = {}, issuerAddress = this.liteWeb.defaultAddress.hex, callback = false) {
         if (utils.isFunction(issuerAddress)) {
             callback = issuerAddress;
-            issuerAddress = this.tronWeb.defaultAddress.hex;
+            issuerAddress = this.liteWeb.defaultAddress.hex;
         } else if (utils.isObject(issuerAddress)) {
             options = issuerAddress;
-            issuerAddress = this.tronWeb.defaultAddress.hex;
+            issuerAddress = this.liteWeb.defaultAddress.hex;
         }
 
         if (!callback)
@@ -1216,7 +1216,7 @@ export default class TransactionBuilder {
             data.Permission_id = options.permissionId;
         }
 
-        this.tronWeb.fullNode.request('wallet/updateasset', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
+        this.liteWeb.fullNode.request('wallet/updateasset', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
     }
 
     sendAsset(...args) {
@@ -1239,7 +1239,7 @@ export default class TransactionBuilder {
      * Creates a proposal to modify the network.
      * Can only be created by a current Super Representative.
      */
-    createProposal(parameters = false, issuerAddress = this.tronWeb.defaultAddress.hex, options, callback = false) {
+    createProposal(parameters = false, issuerAddress = this.liteWeb.defaultAddress.hex, options, callback = false) {
         if (utils.isFunction(options)) {
             callback = options;
             options = {};
@@ -1247,10 +1247,10 @@ export default class TransactionBuilder {
 
         if (utils.isFunction(issuerAddress)) {
             callback = issuerAddress;
-            issuerAddress = this.tronWeb.defaultAddress.hex;
+            issuerAddress = this.liteWeb.defaultAddress.hex;
         } else if (utils.isObject(issuerAddress)) {
             options = issuerAddress;
-            issuerAddress = this.tronWeb.defaultAddress.hex;
+            issuerAddress = this.liteWeb.defaultAddress.hex;
         }
 
         if (!callback)
@@ -1287,14 +1287,14 @@ export default class TransactionBuilder {
             data.Permission_id = options.permissionId;
         }
 
-        this.tronWeb.fullNode.request('wallet/proposalcreate', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
+        this.liteWeb.fullNode.request('wallet/proposalcreate', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
     }
 
     /**
      * Deletes a network modification proposal that the owner issued.
      * Only current Super Representative can vote on a proposal.
      */
-    deleteProposal(proposalID = false, issuerAddress = this.tronWeb.defaultAddress.hex, options, callback = false) {
+    deleteProposal(proposalID = false, issuerAddress = this.liteWeb.defaultAddress.hex, options, callback = false) {
         if (utils.isFunction(options)) {
             callback = options;
             options = {};
@@ -1302,10 +1302,10 @@ export default class TransactionBuilder {
 
         if (utils.isFunction(issuerAddress)) {
             callback = issuerAddress;
-            issuerAddress = this.tronWeb.defaultAddress.hex;
+            issuerAddress = this.liteWeb.defaultAddress.hex;
         } else if (utils.isObject(issuerAddress)) {
             options = issuerAddress;
-            issuerAddress = this.tronWeb.defaultAddress.hex;
+            issuerAddress = this.liteWeb.defaultAddress.hex;
         }
 
         if (!callback)
@@ -1335,14 +1335,14 @@ export default class TransactionBuilder {
             data.Permission_id = options.permissionId;
         }
 
-        this.tronWeb.fullNode.request('wallet/proposaldelete', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
+        this.liteWeb.fullNode.request('wallet/proposaldelete', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
     }
 
     /**
      * Adds a vote to an issued network modification proposal.
      * Only current Super Representative can vote on a proposal.
      */
-    voteProposal(proposalID = false, isApproval = false, voterAddress = this.tronWeb.defaultAddress.hex, options, callback = false) {
+    voteProposal(proposalID = false, isApproval = false, voterAddress = this.liteWeb.defaultAddress.hex, options, callback = false) {
         if (utils.isFunction(options)) {
             callback = options;
             options = {};
@@ -1350,10 +1350,10 @@ export default class TransactionBuilder {
 
         if (utils.isFunction(voterAddress)) {
             callback = voterAddress;
-            voterAddress = this.tronWeb.defaultAddress.hex;
+            voterAddress = this.liteWeb.defaultAddress.hex;
         } else if (utils.isObject(voterAddress)) {
             options = voterAddress;
-            voterAddress = this.tronWeb.defaultAddress.hex;
+            voterAddress = this.liteWeb.defaultAddress.hex;
         }
 
         if (!callback)
@@ -1389,15 +1389,15 @@ export default class TransactionBuilder {
             data.Permission_id = options.permissionId;
         }
 
-        this.tronWeb.fullNode.request('wallet/proposalapprove', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
+        this.liteWeb.fullNode.request('wallet/proposalapprove', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
     }
 
     /**
-     * Create an exchange between a token and TRX.
+     * Create an exchange between a token and XLT.
      * Token Name should be a CASE SENSITIVE string.
-     * PLEASE VERIFY THIS ON TRONSCAN.
+     * PLEASE VERIFY THIS ON LITESCAN.
      */
-    createTRXExchange(tokenName, tokenBalance, trxBalance, ownerAddress = this.tronWeb.defaultAddress.hex, options, callback = false) {
+    createXLTExchange(tokenName, tokenBalance, xltBalance, ownerAddress = this.liteWeb.defaultAddress.hex, options, callback = false) {
         if (utils.isFunction(options)) {
             callback = options;
             options = {};
@@ -1405,14 +1405,14 @@ export default class TransactionBuilder {
 
         if (utils.isFunction(ownerAddress)) {
             callback = ownerAddress;
-            ownerAddress = this.tronWeb.defaultAddress.hex;
+            ownerAddress = this.liteWeb.defaultAddress.hex;
         } else if (utils.isObject(ownerAddress)) {
             options = ownerAddress;
-            ownerAddress = this.tronWeb.defaultAddress.hex;
+            ownerAddress = this.liteWeb.defaultAddress.hex;
         }
 
         if (!callback)
-            return this.injectPromise(this.createTRXExchange, tokenName, tokenBalance, trxBalance, ownerAddress, options);
+            return this.injectPromise(this.createXLTExchange, tokenName, tokenBalance, xltBalance, ownerAddress, options);
 
         if (this.validator.notValid([
             {
@@ -1431,9 +1431,9 @@ export default class TransactionBuilder {
                 value: tokenBalance
             },
             {
-                name: 'trx balance',
+                name: 'xlt balance',
                 type: 'positive-integer',
-                value: trxBalance
+                value: xltBalance
             }
         ], callback))
             return;
@@ -1442,26 +1442,26 @@ export default class TransactionBuilder {
             owner_address: toHex(ownerAddress),
             first_token_id: fromUtf8(tokenName),
             first_token_balance: tokenBalance,
-            second_token_id: '5f', // Constant for TRX.
-            second_token_balance: trxBalance
+            second_token_id: '5f', // Constant for XLT.
+            second_token_balance: xltBalance
         };
 
         if (options && options.permissionId) {
             data.Permission_id = options.permissionId;
         }
 
-        this.tronWeb.fullNode.request('wallet/exchangecreate', data, 'post').then(resources => {
+        this.liteWeb.fullNode.request('wallet/exchangecreate', data, 'post').then(resources => {
             callback(null, resources);
         }).catch(err => callback(err));
     }
 
     /**
      * Create an exchange between a token and another token.
-     * DO NOT USE THIS FOR TRX.
+     * DO NOT USE THIS FOR XLT.
      * Token Names should be a CASE SENSITIVE string.
-     * PLEASE VERIFY THIS ON TRONSCAN.
+     * PLEASE VERIFY THIS ON LITESCAN.
      */
-    createTokenExchange(firstTokenName, firstTokenBalance, secondTokenName, secondTokenBalance, ownerAddress = this.tronWeb.defaultAddress.hex, options, callback = false) {
+    createTokenExchange(firstTokenName, firstTokenBalance, secondTokenName, secondTokenBalance, ownerAddress = this.liteWeb.defaultAddress.hex, options, callback = false) {
         if (utils.isFunction(options)) {
             callback = options;
             options = {};
@@ -1469,10 +1469,10 @@ export default class TransactionBuilder {
 
         if (utils.isFunction(ownerAddress)) {
             callback = ownerAddress;
-            ownerAddress = this.tronWeb.defaultAddress.hex;
+            ownerAddress = this.liteWeb.defaultAddress.hex;
         } else if (utils.isObject(ownerAddress)) {
             options = ownerAddress;
-            ownerAddress = this.tronWeb.defaultAddress.hex;
+            ownerAddress = this.liteWeb.defaultAddress.hex;
         }
 
         if (!callback)
@@ -1519,7 +1519,7 @@ export default class TransactionBuilder {
             data.Permission_id = options.permissionId;
         }
 
-        this.tronWeb.fullNode.request('wallet/exchangecreate', data, 'post').then(resources => {
+        this.liteWeb.fullNode.request('wallet/exchangecreate', data, 'post').then(resources => {
             callback(null, resources);
         }).catch(err => callback(err));
     }
@@ -1527,9 +1527,9 @@ export default class TransactionBuilder {
     /**
      * Adds tokens into a bancor style exchange.
      * Will add both tokens at market rate.
-     * Use "_" for the constant value for TRX.
+     * Use "_" for the constant value for XLT.
      */
-    injectExchangeTokens(exchangeID = false, tokenName = false, tokenAmount = 0, ownerAddress = this.tronWeb.defaultAddress.hex, options, callback = false) {
+    injectExchangeTokens(exchangeID = false, tokenName = false, tokenAmount = 0, ownerAddress = this.liteWeb.defaultAddress.hex, options, callback = false) {
         if (utils.isFunction(options)) {
             callback = options;
             options = {};
@@ -1537,10 +1537,10 @@ export default class TransactionBuilder {
 
         if (utils.isFunction(ownerAddress)) {
             callback = ownerAddress;
-            ownerAddress = this.tronWeb.defaultAddress.hex;
+            ownerAddress = this.liteWeb.defaultAddress.hex;
         } else if (utils.isObject(ownerAddress)) {
             options = ownerAddress;
-            ownerAddress = this.tronWeb.defaultAddress.hex;
+            ownerAddress = this.liteWeb.defaultAddress.hex;
         }
 
         if (!callback)
@@ -1583,15 +1583,15 @@ export default class TransactionBuilder {
             data.Permission_id = options.permissionId;
         }
 
-        this.tronWeb.fullNode.request('wallet/exchangeinject', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
+        this.liteWeb.fullNode.request('wallet/exchangeinject', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
     }
 
     /**
      * Withdraws tokens from a bancor style exchange.
      * Will withdraw at market rate both tokens.
-     * Use "_" for the constant value for TRX.
+     * Use "_" for the constant value for XLT.
      */
-    withdrawExchangeTokens(exchangeID = false, tokenName = false, tokenAmount = 0, ownerAddress = this.tronWeb.defaultAddress.hex, options, callback = false) {
+    withdrawExchangeTokens(exchangeID = false, tokenName = false, tokenAmount = 0, ownerAddress = this.liteWeb.defaultAddress.hex, options, callback = false) {
         if (utils.isFunction(options)) {
             callback = options;
             options = {};
@@ -1599,10 +1599,10 @@ export default class TransactionBuilder {
 
         if (utils.isFunction(ownerAddress)) {
             callback = ownerAddress;
-            ownerAddress = this.tronWeb.defaultAddress.hex;
+            ownerAddress = this.liteWeb.defaultAddress.hex;
         } else if (utils.isObject(ownerAddress)) {
             options = ownerAddress;
-            ownerAddress = this.tronWeb.defaultAddress.hex;
+            ownerAddress = this.liteWeb.defaultAddress.hex;
         }
 
         if (!callback)
@@ -1645,19 +1645,19 @@ export default class TransactionBuilder {
             data.Permission_id = options.permissionId;
         }
 
-        this.tronWeb.fullNode.request('wallet/exchangewithdraw', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
+        this.liteWeb.fullNode.request('wallet/exchangewithdraw', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
     }
 
     /**
      * Trade tokens on a bancor style exchange.
      * Expected value is a validation and used to cap the total amt of token 2 spent.
-     * Use "_" for the constant value for TRX.
+     * Use "_" for the constant value for XLT.
      */
     tradeExchangeTokens(exchangeID = false,
                         tokenName = false,
                         tokenAmountSold = 0,
                         tokenAmountExpected = 0,
-                        ownerAddress = this.tronWeb.defaultAddress.hex,
+                        ownerAddress = this.liteWeb.defaultAddress.hex,
                         options,
                         callback = false) {
         if (utils.isFunction(options)) {
@@ -1667,10 +1667,10 @@ export default class TransactionBuilder {
 
         if (utils.isFunction(ownerAddress)) {
             callback = ownerAddress;
-            ownerAddress = this.tronWeb.defaultAddress.hex;
+            ownerAddress = this.liteWeb.defaultAddress.hex;
         } else if (utils.isObject(ownerAddress)) {
             options = ownerAddress;
-            ownerAddress = this.tronWeb.defaultAddress.hex;
+            ownerAddress = this.liteWeb.defaultAddress.hex;
         }
 
         if (!callback)
@@ -1711,7 +1711,7 @@ export default class TransactionBuilder {
         const data = {
             owner_address: toHex(ownerAddress),
             exchange_id: parseInt(exchangeID),
-            token_id: this.tronWeb.fromAscii(tokenName),
+            token_id: this.liteWeb.fromAscii(tokenName),
             quant: parseInt(tokenAmountSold),
             expected: parseInt(tokenAmountExpected)
         };
@@ -1720,7 +1720,7 @@ export default class TransactionBuilder {
             data.Permission_id = options.permissionId;
         }
 
-        this.tronWeb.fullNode.request('wallet/exchangetransaction', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
+        this.liteWeb.fullNode.request('wallet/exchangetransaction', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
     }
 
     /**
@@ -1728,7 +1728,7 @@ export default class TransactionBuilder {
      */
     updateSetting(contractAddress = false,
                   userFeePercentage = false,
-                  ownerAddress = this.tronWeb.defaultAddress.hex,
+                  ownerAddress = this.liteWeb.defaultAddress.hex,
                   options,
                   callback = false) {
         if (utils.isFunction(options)) {
@@ -1738,10 +1738,10 @@ export default class TransactionBuilder {
 
         if (utils.isFunction(ownerAddress)) {
             callback = ownerAddress;
-            ownerAddress = this.tronWeb.defaultAddress.hex;
+            ownerAddress = this.liteWeb.defaultAddress.hex;
         } else if (utils.isObject(ownerAddress)) {
             options = ownerAddress;
-            ownerAddress = this.tronWeb.defaultAddress.hex;
+            ownerAddress = this.liteWeb.defaultAddress.hex;
         }
 
         if (!callback)
@@ -1778,7 +1778,7 @@ export default class TransactionBuilder {
             data.Permission_id = options.permissionId;
         }
 
-        this.tronWeb.fullNode.request('wallet/updatesetting', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
+        this.liteWeb.fullNode.request('wallet/updatesetting', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
     }
 
     /**
@@ -1786,7 +1786,7 @@ export default class TransactionBuilder {
      */
     updateEnergyLimit(contractAddress = false,
                       originEnergyLimit = false,
-                      ownerAddress = this.tronWeb.defaultAddress.hex,
+                      ownerAddress = this.liteWeb.defaultAddress.hex,
                       options,
                       callback = false) {
 
@@ -1797,10 +1797,10 @@ export default class TransactionBuilder {
 
         if (utils.isFunction(ownerAddress)) {
             callback = ownerAddress;
-            ownerAddress = this.tronWeb.defaultAddress.hex;
+            ownerAddress = this.liteWeb.defaultAddress.hex;
         } else if (utils.isObject(ownerAddress)) {
             options = ownerAddress;
-            ownerAddress = this.tronWeb.defaultAddress.hex;
+            ownerAddress = this.liteWeb.defaultAddress.hex;
         }
 
         if (!callback)
@@ -1837,7 +1837,7 @@ export default class TransactionBuilder {
             data.Permission_id = options.permissionId;
         }
 
-        this.tronWeb.fullNode.request('wallet/updateenergylimit', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
+        this.liteWeb.fullNode.request('wallet/updateenergylimit', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
     }
 
     checkPermissions(permissions, type) {
@@ -1852,7 +1852,7 @@ export default class TransactionBuilder {
                 return false
             }
             for (let key of permissions.keys) {
-                if (!this.tronWeb.isAddress(key.address)
+                if (!this.liteWeb.isAddress(key.address)
                     || !utils.isInteger(key.weight)
                     || key.weight > permissions.threshold
                     || key.weight < 1
@@ -1865,7 +1865,7 @@ export default class TransactionBuilder {
         return true
     }
 
-    updateAccountPermissions(ownerAddress = this.tronWeb.defaultAddress.hex,
+    updateAccountPermissions(ownerAddress = this.liteWeb.defaultAddress.hex,
                              ownerPermissions = false,
                              witnessPermissions = false,
                              activesPermissions = false,
@@ -1889,7 +1889,7 @@ export default class TransactionBuilder {
         if (!callback)
             return this.injectPromise(this.updateAccountPermissions, ownerAddress, ownerPermissions, witnessPermissions, activesPermissions);
 
-        if (!this.tronWeb.isAddress(ownerAddress))
+        if (!this.liteWeb.isAddress(ownerAddress))
             return callback('Invalid ownerAddress provided');
 
         if (!this.checkPermissions(ownerPermissions, 0)) {
@@ -1923,7 +1923,7 @@ export default class TransactionBuilder {
             data.actives = activesPermissions.length === 1 ? activesPermissions[0] : activesPermissions
         }
 
-        this.tronWeb.fullNode.request('wallet/accountpermissionupdate', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
+        this.liteWeb.fullNode.request('wallet/accountpermissionupdate', data, 'post').then(transaction => resultManager(transaction, callback)).catch(err => callback(err));
     }
 
     async newTxID(transaction, callback) {
@@ -1931,7 +1931,7 @@ export default class TransactionBuilder {
         if (!callback)
             return this.injectPromise(this.newTxID, transaction);
 
-        this.tronWeb.fullNode
+        this.liteWeb.fullNode
             .request(
                 'wallet/getsignweight',
                 transaction,
@@ -1956,7 +1956,7 @@ export default class TransactionBuilder {
 
         if (options.data) {
             if (options.dataFormat !== 'hex')
-                options.data = this.tronWeb.toHex(options.data);
+                options.data = this.liteWeb.toHex(options.data);
             options.data = options.data.replace(/^0x/, '')
             if (options.data.length === 0)
                 return callback('Invalid data provided');

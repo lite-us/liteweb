@@ -1,8 +1,8 @@
 {
-    "name": "tronweb",
+    "name": "liteweb",
     "version": "2.7.4",
-    "description": "JavaScript SDK that encapsulates the TRON HTTP API",
-    "main": "dist/TronWeb.node.js",
+    "description": "JavaScript SDK that encapsulates the LITE HTTP API",
+    "main": "dist/LiteWeb.node.js",
     "scripts": {
         "prepare": "npm run build",
         "build": "npm run clean && webpack --config webpack.config.js --progress --colors",
@@ -82,11 +82,11 @@
             "url": "https://github.com/sullof"
         },
         {
-            "name": "TRON-US",
-            "url": "https://github.com/tron-us"
+            "name": "LITE-US",
+            "url": "https://github.com/lite-us"
         }
     ],
-    "homepage": "https://github.com/tron-us/tronweb",
+    "homepage": "https://github.com/lite-us/liteweb",
     "license": "MIT",
-    "repository": "https://github.com/tron-us/tronweb.git"
+    "repository": "https://github.com/lite-us/liteweb.git"
 }

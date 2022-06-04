@@ -4,22 +4,22 @@ const wait = require('../../helpers/wait');
 const assertThrow = require('../../helpers/assertThrow');
 const broadcaster = require('../../helpers/broadcaster');
 const _ = require('lodash');
-const tronWebBuilder = require('../../helpers/tronWebBuilder');
-const TronWeb = tronWebBuilder.TronWeb;
+const liteWebBuilder = require('../../helpers/liteWebBuilder');
+const LiteWeb = liteWebBuilder.LiteWeb;
 
 const testRevertContract = require('../../fixtures/contracts').testRevert;
 
 describe('#contract.method', function () {
 
     let accounts;
-    let tronWeb;
+    let liteWeb;
     let emptyAccount;
 
     before(async function () {
-        tronWeb = tronWebBuilder.createInstance();
-        // ALERT this works only with Tron Quickstart:
-        accounts = await tronWebBuilder.getTestAccounts(-1);
-        emptyAccount = await TronWeb.createAccount();
+        liteWeb = liteWebBuilder.createInstance();
+        // ALERT this works only with Lite Quickstart:
+        accounts = await liteWebBuilder.getTestAccounts(-1);
+        emptyAccount = await LiteWeb.createAccount();
     });
 
     describe('#send()', function () {
@@ -27,11 +27,11 @@ describe('#contract.method', function () {
         let testRevert
 
         before(async function () {
-            const tx = await broadcaster(tronWeb.transactionBuilder.createSmartContract({
+            const tx = await broadcaster(liteWeb.transactionBuilder.createSmartContract({
                 abi: testRevertContract.abi,
                 bytecode: testRevertContract.bytecode
             }, accounts.b58[0]), accounts.pks[0])
-            testRevert = await tronWeb.contract().at(tx.transaction.contract_address)
+            testRevert = await liteWeb.contract().at(tx.transaction.contract_address)
         })
 
         it("should set accounts[2] as the owner and check it with getOwner(1)", async function () {
@@ -54,11 +54,11 @@ describe('#contract.method', function () {
         let testRevert
 
         before(async function () {
-            const tx = await broadcaster(tronWeb.transactionBuilder.createSmartContract({
+            const tx = await broadcaster(liteWeb.transactionBuilder.createSmartContract({
                 abi: testRevertContract.abi,
                 bytecode: testRevertContract.bytecode
             }, accounts.b58[0]), accounts.pks[0])
-            testRevert = await tronWeb.contract().at(tx.transaction.contract_address)
+            testRevert = await liteWeb.contract().at(tx.transaction.contract_address)
             await testRevert.setOwner(accounts.b58[2]).send()
         })
 

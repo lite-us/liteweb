@@ -7,13 +7,13 @@ const wait = require('../helpers/wait');
 const broadcaster = require('../helpers/broadcaster');
 const pollAccountFor = require('../helpers/pollAccountFor');
 const _ = require('lodash');
-const tronWebBuilder = require('../helpers/tronWebBuilder');
+const liteWebBuilder = require('../helpers/liteWebBuilder');
 const assertEqualHex = require('../helpers/assertEqualHex');
 const testRevertContract = require('../fixtures/contracts').testRevert;
 const testConstantContract = require('../fixtures/contracts').testConstant;
 const waitChainData = require('../helpers/waitChainData');
 
-const TronWeb = tronWebBuilder.TronWeb;
+const LiteWeb = liteWebBuilder.LiteWeb;
 const {
     ADDRESS_HEX,
     ADDRESS_BASE58,
@@ -23,39 +23,39 @@ const {
     isProposalApproved
 } = require('../helpers/config');
 
-describe('TronWeb.transactionBuilder', function () {
+describe('LiteWeb.transactionBuilder', function () {
 
     let accounts;
-    let tronWeb;
+    let liteWeb;
     let emptyAccount;
     let isAllowSameTokenNameApproved
 
     before(async function () {
-        tronWeb = tronWebBuilder.createInstance();
-        // ALERT this works only with Tron Quickstart:
-        accounts = await tronWebBuilder.getTestAccounts(-1);
-        emptyAccount = await TronWeb.createAccount();
-        isAllowSameTokenNameApproved = await isProposalApproved(tronWeb, 'getAllowSameTokenName')
+        liteWeb = liteWebBuilder.createInstance();
+        // ALERT this works only with Lite Quickstart:
+        accounts = await liteWebBuilder.getTestAccounts(-1);
+        emptyAccount = await LiteWeb.createAccount();
+        isAllowSameTokenNameApproved = await isProposalApproved(liteWeb, 'getAllowSameTokenName')
     });
 
     describe('#constructor()', function () {
 
-        it('should have been set a full instance in tronWeb', function () {
+        it('should have been set a full instance in liteWeb', function () {
 
-            assert.instanceOf(tronWeb.transactionBuilder, TronWeb.TransactionBuilder);
+            assert.instanceOf(liteWeb.transactionBuilder, LiteWeb.TransactionBuilder);
         });
 
     });
 
-    describe('#sendTrx()', function () {
+    describe('#sendXlt()', function () {
 
-        it(`should send 10 trx from default address to accounts[1]`, async function () {
+        it(`should send 10 xlt from default address to accounts[1]`, async function () {
             const params = [
                 [accounts.b58[1], 10, {permissionId: 2}],
                 [accounts.b58[1], 10]
             ];
             for (let param of params) {
-                const transaction = await tronWeb.transactionBuilder.sendTrx(...param);
+                const transaction = await liteWeb.transactionBuilder.sendXlt(...param);
 
                 const parameter = txPars(transaction);
 
@@ -68,13 +68,13 @@ describe('TronWeb.transactionBuilder', function () {
             }
         });
 
-        it(`should send 10 trx from accounts[0] to accounts[1]`, async function () {
+        it(`should send 10 xlt from accounts[0] to accounts[1]`, async function () {
             const params = [
                 [accounts.b58[1], 10, accounts.b58[0], {permissionId: 2}],
                 [accounts.b58[1], 10, accounts.b58[0]]
             ];
             for (let param of params) {
-                const transaction = await tronWeb.transactionBuilder.sendTrx(...param);
+                const transaction = await liteWeb.transactionBuilder.sendXlt(...param);
                 const parameter = txPars(transaction);
 
                 assert.equal(transaction.txID.length, 64);
@@ -90,7 +90,7 @@ describe('TronWeb.transactionBuilder', function () {
         it('should throw if an invalid address is passed', async function () {
 
             await assertThrow(
-                tronWeb.transactionBuilder.sendTrx('40f0b27e3d16060a5b0e8e995120e00', 10),
+                liteWeb.transactionBuilder.sendXlt('40f0b27e3d16060a5b0e8e995120e00', 10),
                 'Invalid recipient address provided'
             );
 
@@ -99,7 +99,7 @@ describe('TronWeb.transactionBuilder', function () {
         it('should throw if an invalid amount is passed', async function () {
 
             await assertThrow(
-                tronWeb.transactionBuilder.sendTrx(accounts.hex[2], -10),
+                liteWeb.transactionBuilder.sendXlt(accounts.hex[2], -10),
                 'Invalid amount provided'
             );
 
@@ -108,7 +108,7 @@ describe('TronWeb.transactionBuilder', function () {
         it('should throw if an invalid origin address is passed', async function () {
 
             await assertThrow(
-                tronWeb.transactionBuilder.sendTrx(accounts.hex[3], 10, '40f0b27e3d16060a5b0e8e995120e00'),
+                liteWeb.transactionBuilder.sendXlt(accounts.hex[3], 10, '40f0b27e3d16060a5b0e8e995120e00'),
                 'Invalid origin address provided'
             );
 
@@ -118,8 +118,8 @@ describe('TronWeb.transactionBuilder', function () {
         it('should throw if trying to transfer to itself', async function () {
 
             await assertThrow(
-                tronWeb.transactionBuilder.sendTrx(accounts.hex[3], 10, accounts.hex[3]),
-                'Cannot transfer TRX to the same account'
+                liteWeb.transactionBuilder.sendXlt(accounts.hex[3], 10, accounts.hex[3]),
+                'Cannot transfer XLT to the same account'
             );
 
         });
@@ -127,7 +127,7 @@ describe('TronWeb.transactionBuilder', function () {
         it('should throw if trying to transfer from an account with not enough funds', async function () {
 
             await assertThrow(
-                tronWeb.transactionBuilder.sendTrx(accounts.hex[3], 10, emptyAccount.address.base58),
+                liteWeb.transactionBuilder.sendXlt(accounts.hex[3], 10, emptyAccount.address.base58),
                 null,
                 'ContractValidateException'
             );
@@ -144,7 +144,7 @@ describe('TronWeb.transactionBuilder', function () {
             const options = getTokenOptions();
             for (let i = 0; i < 2; i++) {
                 if (i === 1) options.permissionId = 2;
-                const transaction = await tronWeb.transactionBuilder.createToken(options, accounts.b58[2]);
+                const transaction = await liteWeb.transactionBuilder.createToken(options, accounts.b58[2]);
                 const parameter = txPars(transaction);
                 assert.equal(transaction.txID.length, 64);
                 assert.equal(parameter.value.total_supply, options.totalSupply);
@@ -165,7 +165,7 @@ describe('TronWeb.transactionBuilder', function () {
 
                 for (let i = 0; i < 2; i++) {
                     if (i === 1) options.permissionId = 2;
-                    const transaction = await tronWeb.transactionBuilder.createToken(options, accounts.b58[8 + i]);
+                    const transaction = await liteWeb.transactionBuilder.createToken(options, accounts.b58[8 + i]);
 
                     const parameter = txPars(transaction);
                     assert.equal(transaction.txID.length, 64);
@@ -179,9 +179,9 @@ describe('TronWeb.transactionBuilder', function () {
 
                     await broadcaster(null, accounts.pks[8 + i], transaction)
 
-                    const tokenList = await tronWeb.trx.getTokensIssuedByAddress(accounts.b58[8 + i])
+                    const tokenList = await liteWeb.xlt.getTokensIssuedByAddress(accounts.b58[8 + i])
                     const tokenID = tokenList[options.name].id
-                    const token = await tronWeb.trx.getTokenByID(tokenID)
+                    const token = await liteWeb.xlt.getTokenByID(tokenID)
 
                     assert.equal(token.vote_score, options.voteScore);
                     assert.equal(token.precision, options.precision);
@@ -200,7 +200,7 @@ describe('TronWeb.transactionBuilder', function () {
             options.saleEnd = options.saleEnd.toString()
             for (let i = 0; i < 2; i++) {
                 if (i === 1) options.permissionId = 2;
-                const transaction = await tronWeb.transactionBuilder.createToken(options);
+                const transaction = await liteWeb.transactionBuilder.createToken(options);
                 const parameter = txPars(transaction);
                 await assertEqualHex(parameter.value.abbr, options.abbreviation);
                 assert.equal(transaction.raw_data.contract[0].Permission_id || 0, options.permissionId || 0);
@@ -208,7 +208,7 @@ describe('TronWeb.transactionBuilder', function () {
         });
 
         it(`should create a TestToken without freezing anything in 3.6.0`, async function () {
-            if (tronWeb.fullnodeSatisfies('^3.6.0')) {
+            if (liteWeb.fullnodeSatisfies('^3.6.0')) {
                 const options = getTokenOptions();
                 options.totalSupply = '100'
                 options.frozenAmount = '0'
@@ -216,7 +216,7 @@ describe('TronWeb.transactionBuilder', function () {
                 options.saleEnd = options.saleEnd.toString()
                 for (let i = 0; i < 2; i++) {
                     if (i === 1) options.permissionId = 2;
-                    const transaction = await tronWeb.transactionBuilder.createToken(options);
+                    const transaction = await liteWeb.transactionBuilder.createToken(options);
                     const parameter = txPars(transaction);
                     await assertEqualHex(parameter.value.abbr, options.abbreviation);
                     assert.equal(transaction.raw_data.contract[0].Permission_id || 0, options.permissionId || 0);
@@ -233,7 +233,7 @@ describe('TronWeb.transactionBuilder', function () {
             options.name = 123;
 
             await assertThrow(
-                tronWeb.transactionBuilder.createToken(options),
+                liteWeb.transactionBuilder.createToken(options),
                 'Invalid token name provided'
             );
 
@@ -245,7 +245,7 @@ describe('TronWeb.transactionBuilder', function () {
             options.abbreviation = 123;
 
             await assertThrow(
-                tronWeb.transactionBuilder.createToken(options),
+                liteWeb.transactionBuilder.createToken(options),
                 'Invalid token abbreviation provided'
             );
 
@@ -257,20 +257,20 @@ describe('TronWeb.transactionBuilder', function () {
             options.totalSupply = [];
 
             await assertThrow(
-                tronWeb.transactionBuilder.createToken(options),
+                liteWeb.transactionBuilder.createToken(options),
                 'Supply amount must be a positive integer'
             );
 
         });
 
-        it('should throw if TRX ratio is not a positive integer', async function () {
+        it('should throw if XLT ratio is not a positive integer', async function () {
 
             const options = getTokenOptions();
-            options.trxRatio = {};
+            options.xltRatio = {};
 
             await assertThrow(
-                tronWeb.transactionBuilder.createToken(options),
-                'TRX ratio must be a positive integer'
+                liteWeb.transactionBuilder.createToken(options),
+                'XLT ratio must be a positive integer'
             );
 
         });
@@ -281,7 +281,7 @@ describe('TronWeb.transactionBuilder', function () {
             options.tokenRatio = 'tokenRatio';
 
             await assertThrow(
-                tronWeb.transactionBuilder.createToken(options),
+                liteWeb.transactionBuilder.createToken(options),
                 'Token ratio must be a positive integer'
             );
 
@@ -293,14 +293,14 @@ describe('TronWeb.transactionBuilder', function () {
             options.saleStart = Date.now() - 1;
 
             await assertThrow(
-                tronWeb.transactionBuilder.createToken(options),
+                liteWeb.transactionBuilder.createToken(options),
                 'Invalid sale start timestamp provided'
             );
 
             options.saleStart = 'something';
 
             await assertThrow(
-                tronWeb.transactionBuilder.createToken(options),
+                liteWeb.transactionBuilder.createToken(options),
                 'Invalid sale start timestamp provided'
             );
 
@@ -312,14 +312,14 @@ describe('TronWeb.transactionBuilder', function () {
             options.saleEnd = Date.now() - 1000;
 
             await assertThrow(
-                tronWeb.transactionBuilder.createToken(options),
+                liteWeb.transactionBuilder.createToken(options),
                 'Invalid sale end timestamp provided'
             );
 
             options.saleEnd = 'something';
 
             await assertThrow(
-                tronWeb.transactionBuilder.createToken(options),
+                liteWeb.transactionBuilder.createToken(options),
                 'Invalid sale end timestamp provided'
             );
 
@@ -331,14 +331,14 @@ describe('TronWeb.transactionBuilder', function () {
             options.description = 123;
 
             await assertThrow(
-                tronWeb.transactionBuilder.createToken(options),
+                liteWeb.transactionBuilder.createToken(options),
                 'Invalid token description provided'
             );
 
             options.description = '';
 
             await assertThrow(
-                tronWeb.transactionBuilder.createToken(options),
+                liteWeb.transactionBuilder.createToken(options),
                 'Invalid token description provided'
             );
 
@@ -350,21 +350,21 @@ describe('TronWeb.transactionBuilder', function () {
             options.url = 123;
 
             await assertThrow(
-                tronWeb.transactionBuilder.createToken(options),
+                liteWeb.transactionBuilder.createToken(options),
                 'Invalid token url provided'
             );
 
             options.url = '';
 
             await assertThrow(
-                tronWeb.transactionBuilder.createToken(options),
+                liteWeb.transactionBuilder.createToken(options),
                 'Invalid token url provided'
             );
 
             options.url = '//www.example.com';
 
             await assertThrow(
-                tronWeb.transactionBuilder.createToken(options),
+                liteWeb.transactionBuilder.createToken(options),
                 'Invalid token url provided'
             );
 
@@ -376,14 +376,14 @@ describe('TronWeb.transactionBuilder', function () {
             options.freeBandwidth = -1;
 
             await assertThrow(
-                tronWeb.transactionBuilder.createToken(options),
+                liteWeb.transactionBuilder.createToken(options),
                 'Invalid Free bandwidth amount provided'
             );
 
             options.freeBandwidth = 'something';
 
             await assertThrow(
-                tronWeb.transactionBuilder.createToken(options),
+                liteWeb.transactionBuilder.createToken(options),
                 'Invalid Free bandwidth amount provided'
             );
 
@@ -396,14 +396,14 @@ describe('TronWeb.transactionBuilder', function () {
             delete options.freeBandwidthLimit;
 
             await assertThrow(
-                tronWeb.transactionBuilder.createToken(options),
+                liteWeb.transactionBuilder.createToken(options),
                 'Invalid Free bandwidth limit provided'
             );
 
             options.freeBandwidthLimit = 'something';
 
             await assertThrow(
-                tronWeb.transactionBuilder.createToken(options),
+                liteWeb.transactionBuilder.createToken(options),
                 'Invalid Free bandwidth limit provided'
             );
 
@@ -415,14 +415,14 @@ describe('TronWeb.transactionBuilder', function () {
             options.frozenAmount = -1;
 
             await assertThrow(
-                tronWeb.transactionBuilder.createToken(options),
+                liteWeb.transactionBuilder.createToken(options),
                 'Invalid Frozen supply provided'
             );
 
             options.frozenAmount = 'something';
 
             await assertThrow(
-                tronWeb.transactionBuilder.createToken(options),
+                liteWeb.transactionBuilder.createToken(options),
                 'Invalid Frozen supply provided'
             );
         });
@@ -433,7 +433,7 @@ describe('TronWeb.transactionBuilder', function () {
             options.frozenDuration = 'something';
 
             await assertThrow(
-                tronWeb.transactionBuilder.createToken(options),
+                liteWeb.transactionBuilder.createToken(options),
                 'Invalid Frozen duration provided'
             );
 
@@ -444,7 +444,7 @@ describe('TronWeb.transactionBuilder', function () {
             const options = getTokenOptions();
 
             await assertThrow(
-                tronWeb.transactionBuilder.createToken(options, '0xzzzww'),
+                liteWeb.transactionBuilder.createToken(options, '0xzzzww'),
                 'Invalid issuer address provided'
             );
 
@@ -456,7 +456,7 @@ describe('TronWeb.transactionBuilder', function () {
 
             it(`should allow accounts[2] to create a TestToken`, async function () {
                 const options = getTokenOptions();
-                const transaction = await tronWeb.transactionBuilder.createAsset(options, accounts.b58[2]);
+                const transaction = await liteWeb.transactionBuilder.createAsset(options, accounts.b58[2]);
                 const parameter = txPars(transaction);
                 assert.equal(transaction.txID.length, 64);
                 assert.equal(parameter.value.total_supply, options.totalSupply);
@@ -478,7 +478,7 @@ describe('TronWeb.transactionBuilder', function () {
             ];
 
             for (let param of params) {
-                const transaction = await tronWeb.transactionBuilder.updateAccount(...param);
+                const transaction = await liteWeb.transactionBuilder.updateAccount(...param);
                 const parameter = txPars(transaction);
 
                 assert.equal(transaction.txID.length, 64);
@@ -492,7 +492,7 @@ describe('TronWeb.transactionBuilder', function () {
         it('should throw if an invalid name is passed', async function () {
 
             await assertThrow(
-                tronWeb.transactionBuilder.updateAccount(123, accounts.b58[4]),
+                liteWeb.transactionBuilder.updateAccount(123, accounts.b58[4]),
                 'Invalid Name provided'
             );
 
@@ -501,7 +501,7 @@ describe('TronWeb.transactionBuilder', function () {
         it('should throw if the issuer address is invalid', async function () {
 
             await assertThrow(
-                tronWeb.transactionBuilder.updateAccount('New name', '0xzzzww'),
+                liteWeb.transactionBuilder.updateAccount('New name', '0xzzzww'),
                 'Invalid origin address provided'
             );
 
@@ -516,8 +516,8 @@ describe('TronWeb.transactionBuilder', function () {
             const ids = ['abcabc110', 'testtest', 'jackieshen110'];
 
             for (let id of ids) {
-                let accountId = TronWeb.toHex(id);
-                const transaction = await tronWeb.transactionBuilder.setAccountId(accountId, accounts.b58[4]);
+                let accountId = LiteWeb.toHex(id);
+                const transaction = await liteWeb.transactionBuilder.setAccountId(accountId, accounts.b58[4]);
                 const parameter = txPars(transaction);
                 assert.equal(transaction.txID.length, 64);
                 assert.equal(parameter.value.account_id, accountId.slice(2));
@@ -533,7 +533,7 @@ describe('TronWeb.transactionBuilder', function () {
             const ids = ['', '12', '616161616262626231313131313131313131313131313131313131313131313131313131313131']
             for (let id of ids) {
                 await assertThrow(
-                    tronWeb.transactionBuilder.setAccountId(id, accounts.b58[4]),
+                    liteWeb.transactionBuilder.setAccountId(id, accounts.b58[4]),
                     'Invalid accountId provided'
                 );
             }
@@ -543,7 +543,7 @@ describe('TronWeb.transactionBuilder', function () {
         it('should throw invalid owner address error', async function () {
 
             await assertThrow(
-                tronWeb.transactionBuilder.setAccountId(TronWeb.toHex('testtest001'), '0xzzzww'),
+                liteWeb.transactionBuilder.setAccountId(LiteWeb.toHex('testtest001'), '0xzzzww'),
                 'Invalid origin address provided'
             );
 
@@ -561,11 +561,11 @@ describe('TronWeb.transactionBuilder', function () {
             this.timeout(10000)
 
             tokenOptions = getTokenOptions();
-            await broadcaster(tronWeb.transactionBuilder.createToken(tokenOptions, accounts.b58[2]), accounts.pks[2])
+            await broadcaster(liteWeb.transactionBuilder.createToken(tokenOptions, accounts.b58[2]), accounts.pks[2])
 
             let tokenList
             while (!tokenList) {
-                tokenList = await tronWeb.trx.getTokensIssuedByAddress(accounts.b58[2])
+                tokenList = await liteWeb.xlt.getTokensIssuedByAddress(accounts.b58[2])
             }
             if (isAllowSameTokenNameApproved) {
                 tokenID = tokenList[tokenOptions.name].id
@@ -577,7 +577,7 @@ describe('TronWeb.transactionBuilder', function () {
         it(`should allow accounts[2] to update a TestToken`, async function () {
             for (let i = 0; i < 2; i++) {
                 if (i === 1) UPDATED_TEST_TOKEN_OPTIONS.permissionId = 2;
-                const transaction = await tronWeb.transactionBuilder.updateToken(UPDATED_TEST_TOKEN_OPTIONS, accounts.b58[2]);
+                const transaction = await liteWeb.transactionBuilder.updateToken(UPDATED_TEST_TOKEN_OPTIONS, accounts.b58[2]);
                 const parameter = txPars(transaction);
                 assert.equal(transaction.txID.length, 64);
                 await assertEqualHex(parameter.value.description, UPDATED_TEST_TOKEN_OPTIONS.description);
@@ -594,14 +594,14 @@ describe('TronWeb.transactionBuilder', function () {
             options.description = 123;
 
             await assertThrow(
-                tronWeb.transactionBuilder.updateToken(options, accounts.hex[2]),
+                liteWeb.transactionBuilder.updateToken(options, accounts.hex[2]),
                 'Invalid token description provided'
             );
 
             options.description = '';
 
             await assertThrow(
-                tronWeb.transactionBuilder.updateToken(options, accounts.hex[2]),
+                liteWeb.transactionBuilder.updateToken(options, accounts.hex[2]),
                 'Invalid token description provided'
             );
 
@@ -614,21 +614,21 @@ describe('TronWeb.transactionBuilder', function () {
             options.url = 123;
 
             await assertThrow(
-                tronWeb.transactionBuilder.updateToken(options, accounts.hex[2]),
+                liteWeb.transactionBuilder.updateToken(options, accounts.hex[2]),
                 'Invalid token url provided'
             );
 
             options.url = '';
 
             await assertThrow(
-                tronWeb.transactionBuilder.updateToken(options, accounts.hex[2]),
+                liteWeb.transactionBuilder.updateToken(options, accounts.hex[2]),
                 'Invalid token url provided'
             );
 
             options.url = '//www.example.com';
 
             await assertThrow(
-                tronWeb.transactionBuilder.updateToken(options, accounts.hex[2]),
+                liteWeb.transactionBuilder.updateToken(options, accounts.hex[2]),
                 'Invalid token url provided'
             );
 
@@ -640,14 +640,14 @@ describe('TronWeb.transactionBuilder', function () {
             options.freeBandwidth = -1;
 
             await assertThrow(
-                tronWeb.transactionBuilder.updateToken(options, accounts.hex[2]),
+                liteWeb.transactionBuilder.updateToken(options, accounts.hex[2]),
                 'Free bandwidth amount must be a positive integer'
             );
 
             options.freeBandwidth = 'something';
 
             await assertThrow(
-                tronWeb.transactionBuilder.updateToken(options, accounts.hex[2]),
+                liteWeb.transactionBuilder.updateToken(options, accounts.hex[2]),
                 'Free bandwidth amount must be a positive integer'
             );
 
@@ -660,14 +660,14 @@ describe('TronWeb.transactionBuilder', function () {
             delete options.freeBandwidthLimit;
 
             await assertThrow(
-                tronWeb.transactionBuilder.updateToken(options, accounts.hex[2]),
+                liteWeb.transactionBuilder.updateToken(options, accounts.hex[2]),
                 'Free bandwidth limit must be a positive integer'
             );
 
             options.freeBandwidthLimit = 'something';
 
             await assertThrow(
-                tronWeb.transactionBuilder.updateToken(options, accounts.hex[2]),
+                liteWeb.transactionBuilder.updateToken(options, accounts.hex[2]),
                 'Free bandwidth limit must be a positive integer'
             );
 
@@ -676,7 +676,7 @@ describe('TronWeb.transactionBuilder', function () {
         it('should throw if the issuer address is invalid', async function () {
 
             await assertThrow(
-                tronWeb.transactionBuilder.updateToken(UPDATED_TEST_TOKEN_OPTIONS, '0xzzzww'),
+                liteWeb.transactionBuilder.updateToken(UPDATED_TEST_TOKEN_OPTIONS, '0xzzzww'),
                 'Invalid issuer address provided'
             );
 
@@ -684,7 +684,7 @@ describe('TronWeb.transactionBuilder', function () {
 
         describe('#updateAsset()', async function () {
             it(`should allow accounts[2] to update a TestToken`, async function () {
-                const transaction = await tronWeb.transactionBuilder.updateAsset(UPDATED_TEST_TOKEN_OPTIONS, accounts.b58[2]);
+                const transaction = await liteWeb.transactionBuilder.updateAsset(UPDATED_TEST_TOKEN_OPTIONS, accounts.b58[2]);
                 const parameter = txPars(transaction);
                 assert.equal(transaction.txID.length, 64);
                 await assertEqualHex(parameter.value.description, UPDATED_TEST_TOKEN_OPTIONS.description);
@@ -707,11 +707,11 @@ describe('TronWeb.transactionBuilder', function () {
 
             tokenOptions = getTokenOptions();
 
-            await broadcaster(tronWeb.transactionBuilder.createToken(tokenOptions, accounts.b58[5]), accounts.pks[5])
+            await broadcaster(liteWeb.transactionBuilder.createToken(tokenOptions, accounts.b58[5]), accounts.pks[5])
 
             let tokenList
             while (!tokenList) {
-                tokenList = await tronWeb.trx.getTokensIssuedByAddress(accounts.b58[5])
+                tokenList = await liteWeb.xlt.getTokensIssuedByAddress(accounts.b58[5])
             }
             if (isAllowSameTokenNameApproved) {
                 tokenID = tokenList[tokenOptions.name].id
@@ -725,10 +725,10 @@ describe('TronWeb.transactionBuilder', function () {
 
             let token
             if (isAllowSameTokenNameApproved) {
-                token = await tronWeb.trx.getTokenByID(tokenID)
+                token = await liteWeb.xlt.getTokenByID(tokenID)
                 assert.equal(token.id, tokenID)
             } else {
-                token = await tronWeb.trx.getTokenFromID(tokenID)
+                token = await liteWeb.xlt.getTokenFromID(tokenID)
             }
             assert.equal(token.name, tokenOptions.name)
         })
@@ -744,7 +744,7 @@ describe('TronWeb.transactionBuilder', function () {
             for (let param of params) {
                 await wait(4)
 
-                const transaction = await tronWeb.transactionBuilder.purchaseToken(...param);
+                const transaction = await liteWeb.transactionBuilder.purchaseToken(...param);
                 const parameter = txPars(transaction);
                 assert.equal(transaction.txID.length, 64);
                 assert.equal(parameter.value.amount, 20);
@@ -758,7 +758,7 @@ describe('TronWeb.transactionBuilder', function () {
         it("should throw if issuerAddress is invalid", async function () {
 
             await assertThrow(
-                tronWeb.transactionBuilder.purchaseToken('sasdsadasfa', tokenID, 20, accounts.b58[2]),
+                liteWeb.transactionBuilder.purchaseToken('sasdsadasfa', tokenID, 20, accounts.b58[2]),
                 'Invalid issuer address provided'
             )
 
@@ -766,7 +766,7 @@ describe('TronWeb.transactionBuilder', function () {
 
         it("should throw if issuerAddress is not the right one", async function () {
             await assertThrow(
-                tronWeb.transactionBuilder.purchaseToken(accounts.b58[4], tokenID, 20, accounts.b58[2]),
+                liteWeb.transactionBuilder.purchaseToken(accounts.b58[4], tokenID, 20, accounts.b58[2]),
                 null,
                 'The asset is not issued by'
             )
@@ -775,7 +775,7 @@ describe('TronWeb.transactionBuilder', function () {
         it("should throw if the token Id is invalid", async function () {
 
             await assertThrow(
-                tronWeb.transactionBuilder.purchaseToken(accounts.b58[5], 123432, 20, accounts.b58[2]),
+                liteWeb.transactionBuilder.purchaseToken(accounts.b58[5], 123432, 20, accounts.b58[2]),
                 'Invalid token ID provided'
             )
         });
@@ -783,7 +783,7 @@ describe('TronWeb.transactionBuilder', function () {
         it("should throw if token does not exist", async function () {
 
             await assertThrow(
-                tronWeb.transactionBuilder.purchaseToken(accounts.b58[5], '1110000', 20, accounts.b58[2]),
+                liteWeb.transactionBuilder.purchaseToken(accounts.b58[5], '1110000', 20, accounts.b58[2]),
                 null,
                 'No asset named '
             )
@@ -793,7 +793,7 @@ describe('TronWeb.transactionBuilder', function () {
         it("should throw if buyer address is invalid", async function () {
 
             await assertThrow(
-                tronWeb.transactionBuilder.purchaseToken(accounts.b58[5], tokenID, 20, 'sasdadasdas'),
+                liteWeb.transactionBuilder.purchaseToken(accounts.b58[5], tokenID, 20, 'sasdadasdas'),
                 'Invalid buyer address provided'
             )
 
@@ -802,12 +802,12 @@ describe('TronWeb.transactionBuilder', function () {
         it("should throw if amount is invalid", async function () {
 
             await assertThrow(
-                tronWeb.transactionBuilder.purchaseToken(accounts.b58[5], tokenID, -3, accounts.b58[2]),
+                liteWeb.transactionBuilder.purchaseToken(accounts.b58[5], tokenID, -3, accounts.b58[2]),
                 'Invalid amount provided'
             )
 
             await assertThrow(
-                tronWeb.transactionBuilder.purchaseToken(accounts.b58[5], tokenID, "some-amount", accounts.b58[2]),
+                liteWeb.transactionBuilder.purchaseToken(accounts.b58[5], tokenID, "some-amount", accounts.b58[2]),
                 'Invalid amount provided'
             )
         });
@@ -824,11 +824,11 @@ describe('TronWeb.transactionBuilder', function () {
 
             tokenOptions = getTokenOptions();
 
-            await broadcaster(tronWeb.transactionBuilder.createToken(tokenOptions, accounts.b58[6]), accounts.pks[6])
+            await broadcaster(liteWeb.transactionBuilder.createToken(tokenOptions, accounts.b58[6]), accounts.pks[6])
 
             let tokenList
             while (!tokenList) {
-                tokenList = await tronWeb.trx.getTokensIssuedByAddress(accounts.b58[6])
+                tokenList = await liteWeb.xlt.getTokensIssuedByAddress(accounts.b58[6])
             }
 
             if (isAllowSameTokenNameApproved) {
@@ -843,10 +843,10 @@ describe('TronWeb.transactionBuilder', function () {
 
             let token
             if (isAllowSameTokenNameApproved) {
-                token = await tronWeb.trx.getTokenByID(tokenID)
+                token = await liteWeb.xlt.getTokenByID(tokenID)
                 assert.equal(token.id, tokenID)
             } else {
-                token = await tronWeb.trx.getTokenFromID(tokenID)
+                token = await liteWeb.xlt.getTokenFromID(tokenID)
             }
             assert.equal(token.name, tokenOptions.name)
         })
@@ -863,11 +863,11 @@ describe('TronWeb.transactionBuilder', function () {
             for (let param of params) {
                 await wait(4)
 
-                await broadcaster(tronWeb.transactionBuilder.purchaseToken(accounts.b58[6], tokenID, 50, accounts.b58[7]), accounts.pks[7])
+                await broadcaster(liteWeb.transactionBuilder.purchaseToken(accounts.b58[6], tokenID, 50, accounts.b58[7]), accounts.pks[7])
 
                 await wait(1)
 
-                const transaction = await tronWeb.transactionBuilder.sendToken(...param)
+                const transaction = await liteWeb.transactionBuilder.sendToken(...param)
 
                 const parameter = txPars(transaction)
 
@@ -889,7 +889,7 @@ describe('TronWeb.transactionBuilder', function () {
             ];
 
             for (let param of params) {
-                const transaction = await tronWeb.transactionBuilder.sendToken(...param)
+                const transaction = await liteWeb.transactionBuilder.sendToken(...param)
 
                 const parameter = txPars(transaction);
 
@@ -904,7 +904,7 @@ describe('TronWeb.transactionBuilder', function () {
         it("should throw if recipient address is invalid", async function () {
 
             await assertThrow(
-                tronWeb.transactionBuilder.sendToken('sadasfdfsgdfgssa', 5, tokenID, accounts.b58[7]),
+                liteWeb.transactionBuilder.sendToken('sadasfdfsgdfgssa', 5, tokenID, accounts.b58[7]),
                 'Invalid recipient address provided'
             )
 
@@ -913,7 +913,7 @@ describe('TronWeb.transactionBuilder', function () {
         it("should throw if the token Id is invalid", async function () {
 
             await assertThrow(
-                tronWeb.transactionBuilder.sendToken(accounts.b58[1], 5, 143234, accounts.b58[7]),
+                liteWeb.transactionBuilder.sendToken(accounts.b58[1], 5, 143234, accounts.b58[7]),
                 'Invalid token ID provided'
             )
         });
@@ -921,7 +921,7 @@ describe('TronWeb.transactionBuilder', function () {
         it("should throw if origin address is invalid", async function () {
 
             await assertThrow(
-                tronWeb.transactionBuilder.sendToken(accounts.b58[1], 5, tokenID, 213253453453),
+                liteWeb.transactionBuilder.sendToken(accounts.b58[1], 5, tokenID, 213253453453),
                 'Invalid origin address provided'
             )
 
@@ -930,12 +930,12 @@ describe('TronWeb.transactionBuilder', function () {
         it("should throw if amount is invalid", async function () {
 
             await assertThrow(
-                tronWeb.transactionBuilder.sendToken(accounts.b58[1], -5, tokenID, accounts.b58[7]),
+                liteWeb.transactionBuilder.sendToken(accounts.b58[1], -5, tokenID, accounts.b58[7]),
                 'Invalid amount provided'
             )
 
             await assertThrow(
-                tronWeb.transactionBuilder.sendToken(accounts.b58[1], 'amount', tokenID, accounts.b58[7]),
+                liteWeb.transactionBuilder.sendToken(accounts.b58[1], 'amount', tokenID, accounts.b58[7]),
                 'Invalid amount provided'
             )
         });
@@ -952,7 +952,7 @@ describe('TronWeb.transactionBuilder', function () {
                 [parameters[0], ADDRESS_BASE58]
             ];
             for (let input of inputs) {
-                const transaction = await tronWeb.transactionBuilder.createProposal(...input)
+                const transaction = await liteWeb.transactionBuilder.createProposal(...input)
 
                 const parameter = txPars(transaction);
 
@@ -972,7 +972,7 @@ describe('TronWeb.transactionBuilder', function () {
             ];
 
             for (let input of inputs) {
-                const transaction = await tronWeb.transactionBuilder.createProposal(...input)
+                const transaction = await liteWeb.transactionBuilder.createProposal(...input)
 
                 const parameter = txPars(transaction);
 
@@ -987,7 +987,7 @@ describe('TronWeb.transactionBuilder', function () {
         it("should throw if issuer address is invalid", async function () {
 
             await assertThrow(
-                tronWeb.transactionBuilder.createProposal(parameters, 'sadasdsffdgdf'),
+                liteWeb.transactionBuilder.createProposal(parameters, 'sadasdsffdgdf'),
                 'Invalid issuer address provided'
             )
 
@@ -997,7 +997,7 @@ describe('TronWeb.transactionBuilder', function () {
         it("should throw if the issuer address is not an SR", async function () {
 
             await assertThrow(
-                tronWeb.transactionBuilder.createProposal(parameters, accounts.b58[0]),
+                liteWeb.transactionBuilder.createProposal(parameters, accounts.b58[0]),
                 null,
                 `Witness[${accounts.hex[0]}] not exists`
             )
@@ -1020,17 +1020,17 @@ describe('TronWeb.transactionBuilder', function () {
 
             let parameters = [{"key": 0, "value": 100000}, {"key": 1, "value": 2}]
 
-            await broadcaster(tronWeb.transactionBuilder.createProposal(parameters, ADDRESS_BASE58), PRIVATE_KEY)
+            await broadcaster(liteWeb.transactionBuilder.createProposal(parameters, ADDRESS_BASE58), PRIVATE_KEY)
 
-            proposals = await tronWeb.trx.listProposals();
+            proposals = await liteWeb.xlt.listProposals();
 
         })
 
         after(async function () {
-            proposals = await tronWeb.trx.listProposals();
+            proposals = await liteWeb.xlt.listProposals();
             for (let proposal of proposals) {
                 if (proposal.state !== 'CANCELED')
-                    await broadcaster(tronWeb.transactionBuilder.deleteProposal(proposal.proposal_id), PRIVATE_KEY)
+                    await broadcaster(liteWeb.transactionBuilder.deleteProposal(proposal.proposal_id), PRIVATE_KEY)
             }
         })
 
@@ -1041,7 +1041,7 @@ describe('TronWeb.transactionBuilder', function () {
                 [proposals[0].proposal_id]
             ];
             for (let param of params) {
-                const transaction = await tronWeb.transactionBuilder.deleteProposal(...param)
+                const transaction = await liteWeb.transactionBuilder.deleteProposal(...param)
                 const parameter = txPars(transaction);
 
                 assert.equal(parameter.value.owner_address, ADDRESS_HEX);
@@ -1054,10 +1054,10 @@ describe('TronWeb.transactionBuilder', function () {
 
         it('should throw trying to cancel an already canceled proposal', async function () {
 
-            await broadcaster(await tronWeb.transactionBuilder.deleteProposal(proposals[0].proposal_id));
+            await broadcaster(await liteWeb.transactionBuilder.deleteProposal(proposals[0].proposal_id));
 
             await assertThrow(
-                tronWeb.transactionBuilder.deleteProposal(proposals[0].proposal_id),
+                liteWeb.transactionBuilder.deleteProposal(proposals[0].proposal_id),
                 null,
                 `Proposal[${proposals[0].proposal_id}] canceled`);
 
@@ -1069,11 +1069,11 @@ describe('TronWeb.transactionBuilder', function () {
 
     describe.skip("#applyForSR", async function () {
 
-        let url = 'https://xtron.network';
+        let url = 'https://xlite.network';
 
         it('should allow accounts[0] to apply for SR', async function () {
 
-            const transaction = await tronWeb.transactionBuilder.applyForSR(accounts.b58[20], url);
+            const transaction = await liteWeb.transactionBuilder.applyForSR(accounts.b58[20], url);
             const parameter = txPars(transaction);
 
             assert.equal(parameter.value.owner_address, accounts.hex[20]);
@@ -1094,7 +1094,7 @@ describe('TronWeb.transactionBuilder', function () {
             ];
 
             for (let param of params) {
-                const transaction = await tronWeb.transactionBuilder.freezeBalance(...param)
+                const transaction = await liteWeb.transactionBuilder.freezeBalance(...param)
 
                 const parameter = txPars(transaction);
                 // jlog(parameter)
@@ -1118,16 +1118,16 @@ describe('TronWeb.transactionBuilder', function () {
 
 
     describe.skip("#vote", async function () {
-        // this is not testable because on Tron Quickstart (like on Shasta) it is not possible to vote
+        // this is not testable because on Lite Quickstart (like on Shasta) it is not possible to vote
 
-        let url = 'https://xtron.network';
+        let url = 'https://xlite.network';
         // let witnesses;
 
 
         before(async function () {
 
-            await broadcaster(tronWeb.transactionBuilder.applyForSR(accounts.b58[0], url), accounts.pks[0])
-            await broadcaster(tronWeb.transactionBuilder.freezeBalance(100e6, 3, 'BANDWIDTH', accounts.b58[1]), accounts.pks[1])
+            await broadcaster(liteWeb.transactionBuilder.applyForSR(accounts.b58[0], url), accounts.pks[0])
+            await broadcaster(liteWeb.transactionBuilder.freezeBalance(100e6, 3, 'BANDWIDTH', accounts.b58[1]), accounts.pks[1])
         })
 
 
@@ -1135,7 +1135,7 @@ describe('TronWeb.transactionBuilder', function () {
             let votes = {}
             votes[accounts.hex[0]] = 5
 
-            const transaction = await tronWeb.transactionBuilder.vote(votes, accounts.b58[1])
+            const transaction = await liteWeb.transactionBuilder.vote(votes, accounts.b58[1])
             const parameter = txPars(transaction);
 
             assert.equal(parameter.value.owner_address, accounts.hex[1]);
@@ -1157,7 +1157,7 @@ describe('TronWeb.transactionBuilder', function () {
             };
             for (let i = 0; i < 2; i++) {
                 if (i === 1) options.permissionId = 2;
-                const tx = await tronWeb.transactionBuilder.createSmartContract(options)
+                const tx = await liteWeb.transactionBuilder.createSmartContract(options)
                 assert.equal(tx.raw_data.contract[0].parameter.value.new_contract.consume_user_resource_percent, 100);
                 assert.equal(tx.raw_data.contract[0].parameter.value.new_contract.origin_energy_limit, 1e7);
                 assert.equal(tx.raw_data.fee_limit, 1e9);
@@ -1176,7 +1176,7 @@ describe('TronWeb.transactionBuilder', function () {
             };
             for (let i = 0; i < 2; i++) {
                 if (i === 1) options.permissionId = 2;
-                const tx = await tronWeb.transactionBuilder.createSmartContract(options)
+                const tx = await liteWeb.transactionBuilder.createSmartContract(options)
                 assert.equal(tx.raw_data.contract[0].parameter.value.new_contract.consume_user_resource_percent, 30);
                 assert.equal(tx.raw_data.contract[0].parameter.value.new_contract.origin_energy_limit, 9e6);
                 assert.equal(tx.raw_data.fee_limit, 9e8);
@@ -1191,13 +1191,13 @@ describe('TronWeb.transactionBuilder', function () {
         before(async function () {
             this.timeout(20000);
 
-            transaction = await tronWeb.transactionBuilder.createSmartContract({
+            transaction = await liteWeb.transactionBuilder.createSmartContract({
                 abi: testConstantContract.abi,
                 bytecode: testConstantContract.bytecode
             }, accounts.hex[6]);
             await broadcaster(null, accounts.pks[6], transaction);
             while (true) {
-                const tx = await tronWeb.trx.getTransactionInfo(transaction.txID);
+                const tx = await liteWeb.xlt.getTransactionInfo(transaction.txID);
                 if (Object.keys(tx).length === 0) {
                     await wait(3);
                     continue;
@@ -1221,7 +1221,7 @@ describe('TronWeb.transactionBuilder', function () {
 
             for (let i = 0; i < 2; i++) {
                 if (i === 1) options.permissionId = 2;
-                transaction = await tronWeb.transactionBuilder.triggerConstantContract(contractAddress, functionSelector, options,
+                transaction = await liteWeb.transactionBuilder.triggerConstantContract(contractAddress, functionSelector, options,
                     parameter, issuerAddress);
                 assert.isTrue(transaction.result.result &&
                     transaction.transaction.raw_data.contract[0].parameter.type_url === 'type.googleapis.com/protocol.TriggerSmartContract');
@@ -1239,13 +1239,13 @@ describe('TronWeb.transactionBuilder', function () {
         before(async function () {
             this.timeout(20000);
 
-            transaction = await tronWeb.transactionBuilder.createSmartContract({
+            transaction = await liteWeb.transactionBuilder.createSmartContract({
                 abi: testConstantContract.abi,
                 bytecode: testConstantContract.bytecode
             }, accounts.hex[6]);
             await broadcaster(null, accounts.pks[6], transaction);
             while (true) {
-                const tx = await tronWeb.trx.getTransactionInfo(transaction.txID);
+                const tx = await liteWeb.xlt.getTransactionInfo(transaction.txID);
                 if (Object.keys(tx).length === 0) {
                     await wait(3);
                     continue;
@@ -1269,7 +1269,7 @@ describe('TronWeb.transactionBuilder', function () {
 
             for (let i = 0; i < 2; i++) {
                 if (i === 1) options.permissionId = 2;
-                transaction = await tronWeb.transactionBuilder.triggerConfirmedConstantContract(contractAddress, functionSelector, options,
+                transaction = await liteWeb.transactionBuilder.triggerConfirmedConstantContract(contractAddress, functionSelector, options,
                     parameter, issuerAddress);
                 assert.isTrue(transaction.result.result &&
                     transaction.transaction.raw_data.contract[0].parameter.type_url === 'type.googleapis.com/protocol.TriggerSmartContract');
@@ -1288,13 +1288,13 @@ describe('TronWeb.transactionBuilder', function () {
         before(async function () {
             this.timeout(20000);
 
-            transaction = await tronWeb.transactionBuilder.createSmartContract({
+            transaction = await liteWeb.transactionBuilder.createSmartContract({
                 abi: testConstantContract.abi,
                 bytecode: testConstantContract.bytecode
             }, accounts.hex[7]);
             await broadcaster(null, accounts.pks[7], transaction);
             while (true) {
-                const tx = await tronWeb.trx.getTransactionInfo(transaction.txID);
+                const tx = await liteWeb.xlt.getTransactionInfo(transaction.txID);
                 if (Object.keys(tx).length === 0) {
                     await wait(3);
                     continue;
@@ -1311,11 +1311,11 @@ describe('TronWeb.transactionBuilder', function () {
             const ownerAddress = accounts.hex[7];
 
             // verify contract abi before
-            contract = await tronWeb.trx.getContract(contractAddress);
+            contract = await liteWeb.xlt.getContract(contractAddress);
             assert.isTrue(Object.keys(contract.abi).length > 0)
 
             // clear abi
-            transaction = await tronWeb.transactionBuilder.clearABI(contractAddress, ownerAddress);
+            transaction = await liteWeb.transactionBuilder.clearABI(contractAddress, ownerAddress);
             assert.isTrue(!transaction.visible &&
                 transaction.raw_data.contract[0].parameter.type_url === 'type.googleapis.com/protocol.ClearABIContract');
             transaction = await broadcaster(null, accounts.pks[7], transaction);
@@ -1323,7 +1323,7 @@ describe('TronWeb.transactionBuilder', function () {
 
             // verify contract abi after
             while (true) {
-                contract = await tronWeb.trx.getContract(contractAddress);
+                contract = await liteWeb.xlt.getContract(contractAddress);
                 if (Object.keys(contract.abi).length > 0) {
                     await wait(3);
                     continue;
@@ -1338,12 +1338,12 @@ describe('TronWeb.transactionBuilder', function () {
     describe("#updateBrokerage", async function () {
 
         it('should update sr brokerage successfully', async function () {
-            // const transaction = await tronWeb.transactionBuilder.updateBrokerage(10, accounts.hex[1]);
+            // const transaction = await liteWeb.transactionBuilder.updateBrokerage(10, accounts.hex[1]);
         });
 
         it('should throw invalid brokerage provided error', async function () {
             await assertThrow(
-                tronWeb.transactionBuilder.updateBrokerage(null, accounts.hex[1]),
+                liteWeb.transactionBuilder.updateBrokerage(null, accounts.hex[1]),
                 'Invalid brokerage provided'
             );
         });
@@ -1352,7 +1352,7 @@ describe('TronWeb.transactionBuilder', function () {
             let brokerages = [-1, 101]
             for (let brokerage of brokerages) {
                 await assertThrow(
-                    tronWeb.transactionBuilder.updateBrokerage(brokerage, accounts.hex[1]),
+                    liteWeb.transactionBuilder.updateBrokerage(brokerage, accounts.hex[1]),
                     'Brokerage must be an integer between 0 and 100'
                 );
             }
@@ -1360,7 +1360,7 @@ describe('TronWeb.transactionBuilder', function () {
 
         it('should throw invalid owner address provided error', async function () {
             await assertThrow(
-                tronWeb.transactionBuilder.updateBrokerage(10, 'abcd'),
+                liteWeb.transactionBuilder.updateBrokerage(10, 'abcd'),
                 'Invalid owner address provided'
             );
         });
@@ -1376,13 +1376,13 @@ describe('TronWeb.transactionBuilder', function () {
         before(async function () {
             this.timeout(20000);
 
-            transaction = await tronWeb.transactionBuilder.createSmartContract({
+            transaction = await liteWeb.transactionBuilder.createSmartContract({
                 abi: testConstantContract.abi,
                 bytecode: testConstantContract.bytecode
             }, accounts.hex[6]);
             await broadcaster(null, accounts.pks[6], transaction);
             while (true) {
-                const tx = await tronWeb.trx.getTransactionInfo(transaction.txID);
+                const tx = await liteWeb.xlt.getTransactionInfo(transaction.txID);
                 if (Object.keys(tx).length === 0) {
                     await wait(3);
                     continue;
@@ -1406,7 +1406,7 @@ describe('TronWeb.transactionBuilder', function () {
 
             for (let i = 0; i < 2; i++) {
                 if (i === 1) options.permissionId = 2;
-                transaction = await tronWeb.transactionBuilder.triggerSmartContract(contractAddress, functionSelector, options,
+                transaction = await liteWeb.transactionBuilder.triggerSmartContract(contractAddress, functionSelector, options,
                     parameter, issuerAddress);
                 assert.isTrue(transaction.result.result &&
                     transaction.transaction.raw_data.contract[0].parameter.type_url === 'type.googleapis.com/protocol.TriggerSmartContract');
@@ -1433,19 +1433,19 @@ describe('TronWeb.transactionBuilder', function () {
             // create token
             for (let i = idxS; i < idxE; i++) {
                 const options = getTokenOptions();
-                const transaction = await tronWeb.transactionBuilder.createToken(options, accounts.hex[i]);
+                const transaction = await liteWeb.transactionBuilder.createToken(options, accounts.hex[i]);
                 await broadcaster(null, accounts.pks[i], transaction);
                 await waitChainData('token', accounts.hex[i]);
-                const token = await tronWeb.trx.getTokensIssuedByAddress(accounts.hex[i]);
+                const token = await liteWeb.xlt.getTokensIssuedByAddress(accounts.hex[i]);
                 await waitChainData('tokenById', token[Object.keys(token)[0]]['id']);
-                await broadcaster(null, accounts.pks[i], await tronWeb.transactionBuilder.sendToken(
+                await broadcaster(null, accounts.pks[i], await liteWeb.transactionBuilder.sendToken(
                     accounts.hex[toIdx1],
                     10e4,
                     token[Object.keys(token)[0]]['id'],
                     token[Object.keys(token)[0]]['owner_address']
                 ));
                 await waitChainData('sendToken', accounts.hex[toIdx1], 0);
-                await broadcaster(null, accounts.pks[i], await tronWeb.transactionBuilder.sendToken(
+                await broadcaster(null, accounts.pks[i], await liteWeb.transactionBuilder.sendToken(
                     accounts.hex[toIdx2],
                     10e4,
                     token[Object.keys(token)[0]]['id'],
@@ -1458,28 +1458,28 @@ describe('TronWeb.transactionBuilder', function () {
         });
 
         it('should create token exchange', async function () {
-            let transaction = await tronWeb.transactionBuilder.createTokenExchange(tokenNames[0], 10e3, tokenNames[1], 10e3, accounts.hex[toIdx1]);
+            let transaction = await liteWeb.transactionBuilder.createTokenExchange(tokenNames[0], 10e3, tokenNames[1], 10e3, accounts.hex[toIdx1]);
             let parameter = txPars(transaction);
 
             assert.equal(transaction.txID.length, 64);
-            assert.equal(TronWeb.toUtf8(parameter.value.first_token_id), tokenNames[0]);
-            assert.equal(TronWeb.toUtf8(parameter.value.second_token_id), tokenNames[1]);
+            assert.equal(LiteWeb.toUtf8(parameter.value.first_token_id), tokenNames[0]);
+            assert.equal(LiteWeb.toUtf8(parameter.value.second_token_id), tokenNames[1]);
             assert.equal(parameter.type_url, 'type.googleapis.com/protocol.ExchangeCreateContract');
             assert.isUndefined(transaction.raw_data.contract[0].Permission_id);
 
-            transaction = await tronWeb.transactionBuilder.createTokenExchange(tokenNames[0], 10e3, tokenNames[1], 10e3, accounts.hex[toIdx1], {permissionId: 2});
+            transaction = await liteWeb.transactionBuilder.createTokenExchange(tokenNames[0], 10e3, tokenNames[1], 10e3, accounts.hex[toIdx1], {permissionId: 2});
             parameter = txPars(transaction);
 
             assert.equal(transaction.txID.length, 64);
-            assert.equal(TronWeb.toUtf8(parameter.value.first_token_id), tokenNames[0]);
-            assert.equal(TronWeb.toUtf8(parameter.value.second_token_id), tokenNames[1]);
+            assert.equal(LiteWeb.toUtf8(parameter.value.first_token_id), tokenNames[0]);
+            assert.equal(LiteWeb.toUtf8(parameter.value.second_token_id), tokenNames[1]);
             assert.equal(parameter.type_url, 'type.googleapis.com/protocol.ExchangeCreateContract');
             assert.equal(transaction.raw_data.contract[0].Permission_id, 2);
         });
 
     });
 
-    describe("#createTRXExchange", async function () {
+    describe("#createXLTExchange", async function () {
     });
 
     describe("#injectExchangeTokens", async function () {
@@ -1500,15 +1500,15 @@ describe('TronWeb.transactionBuilder', function () {
                 const receiver = accounts.b58[1]
                 const sender = accounts.hex[0]
                 const privateKey = accounts.pks[0]
-                const balance = await tronWeb.trx.getUnconfirmedBalance(sender);
+                const balance = await liteWeb.xlt.getUnconfirmedBalance(sender);
 
-                let transaction = await tronWeb.transactionBuilder.sendTrx(receiver, 10, sender);
+                let transaction = await liteWeb.transactionBuilder.sendXlt(receiver, 10, sender);
                 const previousId = transaction.txID;
-                transaction = await tronWeb.transactionBuilder.extendExpiration(transaction, 3600);
+                transaction = await liteWeb.transactionBuilder.extendExpiration(transaction, 3600);
                 await broadcaster(null, privateKey, transaction);
 
                 assert.notEqual(transaction.txID, previousId)
-                assert.equal(balance - await tronWeb.trx.getUnconfirmedBalance(sender), 10);
+                assert.equal(balance - await liteWeb.xlt.getUnconfirmedBalance(sender), 10);
 
             });
 
@@ -1523,17 +1523,17 @@ describe('TronWeb.transactionBuilder', function () {
                 const receiver = accounts.b58[1]
                 const sender = accounts.hex[0]
                 const privateKey = accounts.pks[0]
-                const balance = await tronWeb.trx.getUnconfirmedBalance(sender);
+                const balance = await liteWeb.xlt.getUnconfirmedBalance(sender);
 
-                let transaction = await tronWeb.transactionBuilder.sendTrx(receiver, 10, sender);
+                let transaction = await liteWeb.transactionBuilder.sendXlt(receiver, 10, sender);
                 const data = "Sending money to Bill.";
-                transaction = await tronWeb.transactionBuilder.addUpdateData(transaction, data);
+                transaction = await liteWeb.transactionBuilder.addUpdateData(transaction, data);
                 const id = transaction.txID;
                 await broadcaster(null, privateKey, transaction);
                 await waitChainData('tx', id);
-                assert.equal(balance - await tronWeb.trx.getUnconfirmedBalance(sender), 10);
-                const unconfirmedTx = await tronWeb.trx.getTransaction(id)
-                assert.equal(tronWeb.toUtf8(unconfirmedTx.raw_data.data), data);
+                assert.equal(balance - await liteWeb.xlt.getUnconfirmedBalance(sender), 10);
+                const unconfirmedTx = await liteWeb.xlt.getTransaction(id)
+                assert.equal(liteWeb.toUtf8(unconfirmedTx.raw_data.data), data);
 
             });
 
@@ -1548,19 +1548,19 @@ describe('TronWeb.transactionBuilder', function () {
                 const receiver = accounts.b58[1]
                 const sender = accounts.hex[0]
                 const privateKey = accounts.pks[0]
-                const balance = await tronWeb.trx.getUnconfirmedBalance(sender);
+                const balance = await liteWeb.xlt.getUnconfirmedBalance(sender);
 
-                let transaction = await tronWeb.transactionBuilder.sendTrx(receiver, 10, sender);
+                let transaction = await liteWeb.transactionBuilder.sendXlt(receiver, 10, sender);
                 const previousId = transaction.txID;
                 const data = "Sending money to Bill.";
-                transaction = await tronWeb.transactionBuilder.alterTransaction(transaction, {data});
+                transaction = await liteWeb.transactionBuilder.alterTransaction(transaction, {data});
                 const id = transaction.txID;
                 assert.notEqual(id, previousId)
                 await broadcaster(null, privateKey, transaction);
                 await waitChainData('tx', id);
-                assert.isTrue(balance > await tronWeb.trx.getUnconfirmedBalance(sender));
-                const unconfirmedTx = await tronWeb.trx.getTransaction(id)
-                assert.equal(tronWeb.toUtf8(unconfirmedTx.raw_data.data), data);
+                assert.isTrue(balance > await liteWeb.xlt.getUnconfirmedBalance(sender));
+                const unconfirmedTx = await liteWeb.xlt.getTransaction(id)
+                assert.equal(liteWeb.toUtf8(unconfirmedTx.raw_data.data), data);
 
             });
 

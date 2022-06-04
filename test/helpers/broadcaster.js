@@ -1,15 +1,15 @@
-const tronWebBuilder = require('../helpers/tronWebBuilder');
+const liteWebBuilder = require('../helpers/liteWebBuilder');
 
 module.exports = async function (func, pk, transaction) {
-    const tronWeb = tronWebBuilder.createInstance();
+    const liteWeb = liteWebBuilder.createInstance();
     if( !transaction) {
         transaction = await func;
     }
-    const signedTransaction = await tronWeb.trx.sign(transaction, pk);
+    const signedTransaction = await liteWeb.xlt.sign(transaction, pk);
     const result = {
         transaction,
         signedTransaction,
-        receipt: await tronWeb.trx.sendRawTransaction(signedTransaction)
+        receipt: await liteWeb.xlt.sendRawTransaction(signedTransaction)
     };
     return Promise.resolve(result);
 }

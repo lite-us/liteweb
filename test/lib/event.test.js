@@ -1,27 +1,27 @@
 const chai = require('chai');
 const {FULL_NODE_API} = require('../helpers/config');
 const assertThrow = require('../helpers/assertThrow');
-const tronWebBuilder = require('../helpers/tronWebBuilder');
-const TronWeb = tronWebBuilder.TronWeb;
+const liteWebBuilder = require('../helpers/liteWebBuilder');
+const LiteWeb = liteWebBuilder.LiteWeb;
 const jlog = require('../helpers/jlog')
 const broadcaster = require('../helpers/broadcaster');
 const wait = require('../helpers/wait')
 
 const assert = chai.assert;
 
-describe('TronWeb.lib.event', async function () {
+describe('LiteWeb.lib.event', async function () {
 
     let accounts
-    let tronWeb
+    let liteWeb
     let contractAddress
     let contract
     let eventLength = 0
 
     before(async function () {
-        tronWeb = tronWebBuilder.createInstance();
-        accounts = await tronWebBuilder.getTestAccounts(-1);
+        liteWeb = liteWebBuilder.createInstance();
+        accounts = await liteWebBuilder.getTestAccounts(-1);
 
-        const result = await broadcaster(tronWeb.transactionBuilder.createSmartContract({
+        const result = await broadcaster(liteWeb.transactionBuilder.createSmartContract({
             abi: [
                 {
                     "anonymous": false,
@@ -68,15 +68,15 @@ describe('TronWeb.lib.event', async function () {
         }, accounts.hex[0]), accounts.pks[0])
 
         contractAddress = result.receipt.transaction.contract_address
-        contract = await tronWeb.contract().at(contractAddress)
+        contract = await liteWeb.contract().at(contractAddress)
 
     });
 
     describe('#constructor()', function () {
 
-        it('should have been set a full instance in tronWeb', function () {
+        it('should have been set a full instance in liteWeb', function () {
 
-            assert.instanceOf(tronWeb.event, TronWeb.Event);
+            assert.instanceOf(liteWeb.event, LiteWeb.Event);
         });
 
     });
@@ -87,14 +87,14 @@ describe('TronWeb.lib.event', async function () {
         it('should emit an unconfirmed event and get it', async function () {
 
             this.timeout(60000)
-            tronWeb.setPrivateKey(accounts.pks[1])
+            liteWeb.setPrivateKey(accounts.pks[1])
             let txId = await contract.emitNow(accounts.hex[2], 2000).send({
                 from: accounts.hex[1]
             })
             eventLength++
             let events
             while(true) {
-                events = await tronWeb.event.getEventsByTransactionID(txId)
+                events = await liteWeb.event.getEventsByTransactionID(txId)
                 if (events.length) {
                     break
                 }
@@ -110,7 +110,7 @@ describe('TronWeb.lib.event', async function () {
         it('should emit an event, wait for confirmation and get it', async function () {
 
             this.timeout(60000)
-            tronWeb.setPrivateKey(accounts.pks[1])
+            liteWeb.setPrivateKey(accounts.pks[1])
             let output = await contract.emitNow(accounts.hex[2], 2000).send({
                 from: accounts.hex[1],
                 shouldPollResponse: true,
@@ -121,7 +121,7 @@ describe('TronWeb.lib.event', async function () {
             let txId = output.id
             let events
             while(true) {
-                events = await tronWeb.event.getEventsByTransactionID(txId)
+                events = await liteWeb.event.getEventsByTransactionID(txId)
                 if (events.length) {
                     break
                 }
@@ -141,14 +141,14 @@ describe('TronWeb.lib.event', async function () {
         it('should emit an event and wait for it', async function () {
 
             this.timeout(60000)
-            tronWeb.setPrivateKey(accounts.pks[3])
+            liteWeb.setPrivateKey(accounts.pks[3])
             await contract.emitNow(accounts.hex[4], 4000).send({
                 from: accounts.hex[3]
             })
             eventLength++
             let events
             while(true) {
-                events = await tronWeb.event.getEventsByContractAddress(contractAddress, {
+                events = await liteWeb.event.getEventsByContractAddress(contractAddress, {
                     eventName: 'SomeEvent',
                     sort: 'block_timestamp'
                 })
@@ -173,7 +173,7 @@ describe('TronWeb.lib.event', async function () {
         it('should watch for an event', async function () {
             
             this.timeout(20000)
-            tronWeb.setPrivateKey(accounts.pks[3])
+            liteWeb.setPrivateKey(accounts.pks[3])
 
             let watchTest = await contract.SomeEvent().watch((err, res) => {
                 if(res) {
@@ -194,7 +194,7 @@ describe('TronWeb.lib.event', async function () {
         it('should only watch for an event with given filters',  async function () {
 
             this.timeout(20000)
-            tronWeb.setPrivateKey(accounts.pks[3])
+            liteWeb.setPrivateKey(accounts.pks[3])
             
             let watchTest = await contract.SomeEvent().watch({filters: {"_amount": "4000"}}, (err, res) => {
                 if(res) { 

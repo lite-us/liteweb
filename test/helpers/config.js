@@ -28,15 +28,15 @@ module.exports = {
             saleEnd: Date.now() + 60000, // 1 minute
             frozenAmount: 5,
             frozenDuration: 1,
-            trxRatio: 10,
+            xltRatio: 10,
             tokenRatio: 2,
             saleStart: Date.now() + 500,
             freeBandwidth: 100,
             freeBandwidthLimit: 1000
         }
     },
-    isProposalApproved: async (tronWeb, proposal) => {
-        let chainParameters = await tronWeb.trx.getChainParameters()
+    isProposalApproved: async (liteWeb, proposal) => {
+        let chainParameters = await liteWeb.xlt.getChainParameters()
         for(let param of chainParameters) {
             if(param.key === proposal) {
                 return param.value

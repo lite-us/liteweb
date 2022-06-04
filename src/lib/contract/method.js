@@ -18,7 +18,7 @@ const decodeOutput = (abi, output) => {
 
 export default class Method {
     constructor(contract, abi) {
-        this.tronWeb = contract.tronWeb;
+        this.liteWeb = contract.liteWeb;
         this.contract = contract;
 
         this.abi = abi;
@@ -28,7 +28,7 @@ export default class Method {
         this.outputs = abi.outputs || [];
 
         this.functionSelector = getFunctionSelector(abi);
-        this.signature = this.tronWeb.sha3(this.functionSelector, false).slice(0, 8);
+        this.signature = this.liteWeb.sha3(this.functionSelector, false).slice(0, 8);
         this.injectPromise = utils.promiseInjector(this);
 
         this.defaultOptions = {
@@ -48,11 +48,11 @@ export default class Method {
 
         args.forEach((arg, index) => {
             if (types[index] == 'address')
-                args[index] = this.tronWeb.address.toHex(arg).replace(ADDRESS_PREFIX_REGEX, '0x')
+                args[index] = this.liteWeb.address.toHex(arg).replace(ADDRESS_PREFIX_REGEX, '0x')
 
             if (types[index] == 'address[]') {
                 args[index] = args[index].map(address => {
-                    return this.tronWeb.address.toHex(address).replace(ADDRESS_PREFIX_REGEX, '0x')
+                    return this.liteWeb.address.toHex(address).replace(ADDRESS_PREFIX_REGEX, '0x')
                 })
             }
         });
@@ -89,7 +89,7 @@ export default class Method {
 
         options = {
             ...this.defaultOptions,
-            from: this.tronWeb.defaultAddress.hex,
+            from: this.liteWeb.defaultAddress.hex,
             ...options,
         };
 
@@ -98,12 +98,12 @@ export default class Method {
             value
         }));
 
-        this.tronWeb.transactionBuilder.triggerSmartContract(
+        this.liteWeb.transactionBuilder.triggerSmartContract(
             this.contract.address,
             this.functionSelector,
             options,
             parameters,
-            options.from ? this.tronWeb.address.toHex(options.from) : false,
+            options.from ? this.liteWeb.address.toHex(options.from) : false,
             (err, transaction) => {
                 if (err)
                     return callback(err);
@@ -121,7 +121,7 @@ export default class Method {
                             let msg2 = ''
                             let chunk = transaction.constant_result[0].substring(8)
                             for (let i = 0; i < len - 8; i += 64) {
-                                msg2 += this.tronWeb.toUtf8(chunk.substring(i, i + 64))
+                                msg2 += this.liteWeb.toUtf8(chunk.substring(i, i + 64))
                             }
                             msg += msg2.replace(/(\u0000|\u000b|\f)+/g, ' ').replace(/ +/g, ' ').replace(/\s+$/g, '');
                         }
@@ -140,10 +140,10 @@ export default class Method {
             });
     }
 
-    async _send(types, args, options = {}, privateKey = this.tronWeb.defaultPrivateKey, callback = false) {
+    async _send(types, args, options = {}, privateKey = this.liteWeb.defaultPrivateKey, callback = false) {
         if (utils.isFunction(privateKey)) {
             callback = privateKey;
-            privateKey = this.tronWeb.defaultPrivateKey;
+            privateKey = this.liteWeb.defaultPrivateKey;
         }
 
         if (utils.isFunction(options)) {
@@ -174,7 +174,7 @@ export default class Method {
 
         options = {
             ...this.defaultOptions,
-            from: this.tronWeb.defaultAddress.hex,
+            from: this.liteWeb.defaultAddress.hex,
             ...options,
         };
 
@@ -184,20 +184,20 @@ export default class Method {
         }));
 
         try {
-            const address = privateKey ? this.tronWeb.address.fromPrivateKey(privateKey) : this.tronWeb.defaultAddress.base58;
-            const transaction = await this.tronWeb.transactionBuilder.triggerSmartContract(
+            const address = privateKey ? this.liteWeb.address.fromPrivateKey(privateKey) : this.liteWeb.defaultAddress.base58;
+            const transaction = await this.liteWeb.transactionBuilder.triggerSmartContract(
                 this.contract.address,
                 this.functionSelector,
                 options,
                 parameters,
-                this.tronWeb.address.toHex(address)
+                this.liteWeb.address.toHex(address)
             );
 
             if (!transaction.result || !transaction.result.result)
                 return callback('Unknown error: ' + JSON.stringify(transaction, null, 2));
 
             // If privateKey is false, this won't be signed here. We assume sign functionality will be replaced.
-            const signedTransaction = await this.tronWeb.trx.sign(transaction.transaction, privateKey);
+            const signedTransaction = await this.liteWeb.xlt.sign(transaction.transaction, privateKey);
 
             if (!signedTransaction.signature) {
                 if (!privateKey)
@@ -206,7 +206,7 @@ export default class Method {
                 return callback('Invalid private key provided');
             }
 
-            const broadcast = await this.tronWeb.trx.sendRawTransaction(signedTransaction);
+            const broadcast = await this.liteWeb.xlt.sendRawTransaction(signedTransaction);
 
             if (broadcast.code) {
                 const err = {
@@ -214,7 +214,7 @@ export default class Method {
                     message: broadcast.code
                 };
                 if (broadcast.message)
-                    err.message = this.tronWeb.toUtf8(broadcast.message);
+                    err.message = this.liteWeb.toUtf8(broadcast.message);
                 return callback(err)
             }
 
@@ -229,7 +229,7 @@ export default class Method {
                     });
                 }
 
-                const output = await this.tronWeb.trx.getTransactionInfo(signedTransaction.txID);
+                const output = await this.liteWeb.xlt.getTransactionInfo(signedTransaction.txID);
 
                 if (!Object.keys(output).length) {
                     return setTimeout(() => {
@@ -239,7 +239,7 @@ export default class Method {
 
                 if (output.result && output.result == 'FAILED') {
                     return callback({
-                        error: this.tronWeb.toUtf8(output.resMessage),
+                        error: this.liteWeb.toUtf8(output.resMessage),
                         transaction: signedTransaction,
                         output
                     });
@@ -285,7 +285,7 @@ export default class Method {
         if (!this.abi.type || !/event/i.test(this.abi.type))
             return callback('Invalid method type for event watching');
 
-        if (!this.tronWeb.eventServer)
+        if (!this.liteWeb.eventServer)
             return callback('No event server configured');
 
         let listener = false;
@@ -309,7 +309,7 @@ export default class Method {
                         params.onlyConfirmed = true
                 }
 
-                const events = await this.tronWeb.event.getEventsByContractAddress(this.contract.address, params);
+                const events = await this.liteWeb.event.getEventsByContractAddress(this.contract.address, params);
                 const [latestEvent] = events.sort((a, b) => b.block - a.block);
                 const newEvents = events.filter((event, index) => {
 

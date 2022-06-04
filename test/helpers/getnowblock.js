@@ -5,11 +5,11 @@ class GetNowBlock {
 
     // In a real case, you should have this in order to allow the library to work stand-alone. But for this test, it is more clear this way.
 
-    // constructor(tronWeb = false) {
-    //     if (!tronWeb)
-    //         throw new Error('Expected instance of TronWeb');
+    // constructor(liteWeb = false) {
+    //     if (!liteWeb)
+    //         throw new Error('Expected instance of LiteWeb');
     //
-    //     this.tronWeb = tronWeb;
+    //     this.liteWeb = liteWeb;
     // }
 
     async someMethod(callback = false) {
@@ -17,7 +17,7 @@ class GetNowBlock {
         if(!callback)
             return this.injectPromise(this.getCurrentBlock);
 
-        this.tronWeb.fullNode.request('wallet/getnowblock').then(block => {
+        this.liteWeb.fullNode.request('wallet/getnowblock').then(block => {
             block.fromPlugin = true
             callback(null, block);
         }).catch(err => callback(err));
@@ -34,7 +34,7 @@ class GetNowBlock {
         return {
             requires: '^2.2.4',
             components: {
-                trx: {
+                xlt: {
                     // will be overridden
                     getCurrentBlock: this.someMethod,
 
